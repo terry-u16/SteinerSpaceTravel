@@ -133,6 +133,8 @@ impl State {
 fn main() {
     let input = read_input();
     let state = solve(&input);
+    write_output(&input, &state);
+    
     let score = state.calc_score_all(&input);
     eprintln!("score: {}", score);
 }
@@ -249,5 +251,18 @@ fn get_score_mul(v: usize, threshold: usize) -> i64 {
         1
     } else {
         MULTIPLIER
+    }
+}
+
+fn write_output(input: &Input, solution: &State) {
+    for i in 0..input.m {
+        let p = solution.points[i + input.n + 1];
+        println!("{} {}", p.x, p.y);
+    }
+
+    println!("{}", solution.orders.len());
+
+    for v in solution.orders.iter() {
+        println!("{}", v);
     }
 }
