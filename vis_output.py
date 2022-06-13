@@ -22,7 +22,7 @@ with open(f"tools/in/{seed:04}.txt") as f:
 with open(output) as f:
     for _ in range(m):
         x, y = map(int, f.readline().split())
-        plt.plot(x, y, ".")
+        plt.plot(x, y, "+", markersize=12)
         points.append((x, y))
     k = int(f.readline())
     orders = []
