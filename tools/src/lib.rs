@@ -44,7 +44,7 @@ pub struct Output {
     path: Vec<(i32, i32)>,
 }
 
-const N: usize = 50;
+const N: usize = 100;
 const M: usize = 8;
 
 pub struct Input {
