@@ -3,7 +3,7 @@ use proconio::*;
 use rand::prelude::*;
 
 const CENTER: i32 = 500;
-const MULTIPLIER: i64 = 10;
+const MULTIPLIER: i64 = 5;
 
 #[allow(unused_macros)]
 macro_rules! chmin {
@@ -86,6 +86,13 @@ impl Point {
         let dy = self.y - other.y;
         (dx * dx + dy * dy) as i64
     }
+
+    fn clip(&mut self, min: i32, max: i32) {
+        chmax!(self.x, min);
+        chmax!(self.y, min);
+        chmin!(self.x, max);
+        chmin!(self.y, max);
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -134,7 +141,7 @@ fn main() {
     let input = read_input();
     let state = solve(&input);
     write_output(&input, &state);
-    
+
     let score = state.calc_score_all(&input);
     eprintln!("score: {}", score);
 }
@@ -194,40 +201,86 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
         }
 
         // 変形
-        let from = rng.gen_range(1..(solution.orders.len() - 1));
-        let to = rng.gen_range((from + 1)..solution.orders.len());
+        let mod_station = rng.gen_range(0..100) < 10;
 
-        let i0 = solution.orders[from - 1];
-        let i1 = solution.orders[from];
-        let i2 = solution.orders[to - 1];
-        let i3 = solution.orders[to];
-        let p0 = solution.points[i0];
-        let p1 = solution.points[i1];
-        let p2 = solution.points[i2];
-        let p3 = solution.points[i3];
-        let mul0 = get_score_mul(i0, input.n);
-        let mul1 = get_score_mul(i1, input.n);
-        let mul2 = get_score_mul(i2, input.n);
-        let mul3 = get_score_mul(i3, input.n);
+        if mod_station {
+            let station_id = input.n + 1 + rng.gen_range(0..input.m);
+            let mut temp_orders = solution.orders.clone();
+            temp_orders.retain(|&v| v != station_id);
 
-        let d01 = p0.dist_sq(&p1) * mul0 * mul1;
-        let d23 = p2.dist_sq(&p3) * mul2 * mul3;
-        let d02 = p0.dist_sq(&p2) * mul0 * mul2;
-        let d13 = p1.dist_sq(&p3) * mul1 * mul3;
+            let mut p = solution.points[station_id];
+            p.x += rng.gen_range(-50..=50);
+            p.y += rng.gen_range(-50..=50);
+            p.clip(0, 1000);
+            let mut new_orders = vec![];
 
-        // スコア計算
-        let score_diff = d02 + d13 - d01 - d23;
-        let new_score = current_score + score_diff;
+            for (&prev, &next) in temp_orders.iter().tuple_windows() {
+                new_orders.push(prev);
+                let mul0 = get_score_mul(prev, input.n);
+                let mul1 = get_score_mul(next, input.n);
+                let p0 = solution.points[prev];
+                let p1 = solution.points[next];
+                let old_dist = p0.dist_sq(&p1) * mul0 * mul1;
+                let new_dist = p0.dist_sq(&p) * mul0 + p.dist_sq(&p1) * mul1;
+                if new_dist < old_dist {
+                    new_orders.push(station_id);
+                }
+            }
 
-        if score_diff <= 0 || rng.gen_bool(f64::exp(-score_diff as f64 * inv_temp)) {
-            // 解の更新
-            current_score = new_score;
-            accepted_count += 1;
-            solution.orders[from..to].reverse();
+            new_orders.push(0);
 
-            if chmin!(best_score, current_score) {
-                best_solution = solution.clone();
-                update_count += 1;
+            let mut new_solution = State::new(solution.points.clone(), new_orders);
+            new_solution.points[station_id] = p;
+            let new_score = new_solution.calc_score_all(input);
+            let score_diff = new_score - current_score;
+
+            if score_diff <= 0 || rng.gen_bool(f64::exp(-score_diff as f64 * inv_temp)) {
+                // 解の更新
+                current_score = new_score;
+                accepted_count += 1;
+                solution = new_solution;
+
+                if chmin!(best_score, current_score) {
+                    best_solution = solution.clone();
+                    update_count += 1;
+                }
+            }
+        } else {
+            let from = rng.gen_range(1..(solution.orders.len() - 1));
+            let to = rng.gen_range((from + 1)..solution.orders.len());
+
+            let i0 = solution.orders[from - 1];
+            let i1 = solution.orders[from];
+            let i2 = solution.orders[to - 1];
+            let i3 = solution.orders[to];
+            let p0 = solution.points[i0];
+            let p1 = solution.points[i1];
+            let p2 = solution.points[i2];
+            let p3 = solution.points[i3];
+            let mul0 = get_score_mul(i0, input.n);
+            let mul1 = get_score_mul(i1, input.n);
+            let mul2 = get_score_mul(i2, input.n);
+            let mul3 = get_score_mul(i3, input.n);
+
+            let d01 = p0.dist_sq(&p1) * mul0 * mul1;
+            let d23 = p2.dist_sq(&p3) * mul2 * mul3;
+            let d02 = p0.dist_sq(&p2) * mul0 * mul2;
+            let d13 = p1.dist_sq(&p3) * mul1 * mul3;
+
+            // スコア計算
+            let score_diff = d02 + d13 - d01 - d23;
+            let new_score = current_score + score_diff;
+
+            if score_diff <= 0 || rng.gen_bool(f64::exp(-score_diff as f64 * inv_temp)) {
+                // 解の更新
+                current_score = new_score;
+                accepted_count += 1;
+                solution.orders[from..to].reverse();
+
+                if chmin!(best_score, current_score) {
+                    best_solution = solution.clone();
+                    update_count += 1;
+                }
             }
         }
 
