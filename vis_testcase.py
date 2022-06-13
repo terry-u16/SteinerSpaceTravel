@@ -1,6 +1,11 @@
+import argparse
 import matplotlib.pyplot as plt
 
-seed = 0
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", "--seed", type=int, required=True)
+args = parser.parse_args()
+
+seed = args.seed
 with open(f"tools/in/{seed:04}.txt") as f:
     n, _ = map(int, f.readline().split())
     plt.plot(500, 500, "*", markersize=15)
