@@ -44,8 +44,8 @@ pub struct Output {
     path: Vec<(i32, i32)>,
 }
 
-const N: usize = 100;
-const M: usize = 10;
+const N: usize = 50;
+const M: usize = 8;
 
 pub struct Input {
     n: usize,
@@ -105,9 +105,20 @@ pub fn gen(seed: u64) -> Input {
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(seed);
     let mut pivots = vec![];
 
-    for _ in 0..20 {
-        let u = rng.gen_range(200..=800);
-        let v = rng.gen_range(200..=800);
+    while pivots.len() < 15 {
+        let u = rng.gen_range(100..=900);
+        let v = rng.gen_range(100..=900);
+
+		let near = pivots.iter().any(|(x, y)| {
+			let dx = u - x;
+			let dy = v - y;
+			dx * dx + dy * dy <= 100 * 100
+		});
+
+		if near {
+			continue;
+		}
+
         pivots.push((u, v));
     }
 
@@ -116,8 +127,8 @@ pub fn gen(seed: u64) -> Input {
     while planets.len() < N {
         let k = rng.gen_range(0..pivots.len());
         let (u, v) = pivots[k];
-        let dx = rng.gen_range(-200..=200);
-        let dy = rng.gen_range(-200..=200);
+        let dx = rng.gen_range(-100..=100);
+        let dy = rng.gen_range(-100..=100);
         let x = u + dx;
         let y = v + dy;
 
