@@ -2,7 +2,8 @@ use itertools::Itertools;
 use proconio::*;
 use rand::prelude::*;
 
-const CENTER: i32 = 500;
+const MAP_SIZE: i32 = 1000;
+const CENTER: i32 = MAP_SIZE / 2;
 const MULTIPLIER: i64 = 5;
 
 #[allow(unused_macros)]
@@ -86,13 +87,6 @@ impl Point {
         let dy = self.y - other.y;
         (dx * dx + dy * dy) as i64
     }
-
-    fn clip(&mut self, min: i32, max: i32) {
-        chmax!(self.x, min);
-        chmax!(self.y, min);
-        chmin!(self.x, max);
-        chmin!(self.y, max);
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -167,7 +161,7 @@ fn read_input() -> Input {
 
 fn solve(input: &Input) -> State {
     let solution = State::init(&input);
-    let solution = annealing(&input, solution, 1.0);
+    let solution = annealing(&input, solution, 10.0);
     solution
 }
 
@@ -188,13 +182,13 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
     let since = std::time::Instant::now();
     let mut time = 0.0;
 
-    let temp0 = 1e3;
-    let temp1 = 1e1;
+    let temp0 = 1e5;
+    let temp1 = 1e2;
     let mut inv_temp = 1.0 / temp0;
 
     while time < 1.0 {
         all_iter += 1;
-        if (all_iter & ((1 << 4) - 1)) == 0 {
+        if (all_iter & ((1 << 6) - 1)) == 0 {
             time = (std::time::Instant::now() - since).as_secs_f64() * duration_inv;
             let temp = f64::powf(temp0, 1.0 - time) * f64::powf(temp1, time);
             inv_temp = 1.0 / temp;
@@ -209,9 +203,9 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
             temp_orders.retain(|&v| v != station_id);
 
             let mut p = solution.points[station_id];
-            p.x += rng.gen_range(-50..=50);
-            p.y += rng.gen_range(-50..=50);
-            p.clip(0, 1000);
+            const DELTA: i32 = 50;
+            p.x = rng.gen_range((p.x - DELTA).max(0)..=(p.x + DELTA).min(MAP_SIZE));
+            p.y = rng.gen_range((p.y - DELTA).max(0)..=(p.y + DELTA).min(MAP_SIZE));
             let mut new_orders = vec![];
 
             for (&prev, &next) in temp_orders.iter().tuple_windows() {
@@ -300,7 +294,7 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
 }
 
 fn get_score_mul(v: usize, threshold: usize) -> i64 {
-    if v == 0 || v > threshold {
+    if v > threshold {
         1
     } else {
         MULTIPLIER
