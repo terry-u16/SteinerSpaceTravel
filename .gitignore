@@ -2,3 +2,7 @@
 /tools/target
 /solver/target
 /out.txt
+/SteinerSpaceTravel.Console/bin
+/SteinerSpaceTravel.Console/obj
+/SteinerSpaceTravel.Core/bin
+/SteinerSpaceTravel.Core/obj
