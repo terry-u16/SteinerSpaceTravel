@@ -3,7 +3,6 @@ use proconio::*;
 use rand::prelude::*;
 
 const MAP_SIZE: i32 = 1000;
-const CENTER: i32 = MAP_SIZE / 2;
 const MULTIPLIER: i64 = 5;
 
 #[allow(unused_macros)]
@@ -97,15 +96,14 @@ struct State {
 
 impl State {
     fn init(input: &Input) -> Self {
-        let mut points = vec![Point::new(CENTER, CENTER)];
-        points.append(&mut input.points.clone());
+        let mut points = input.points.clone();
 
         for _ in 0..input.m {
-            points.push(Point::new(CENTER, CENTER));
+            points.push(points[0]);
         }
 
         let mut orders = vec![];
-        for i in 0..=input.n {
+        for i in 0..input.n {
             orders.push(i);
         }
         orders.push(0);
@@ -161,7 +159,7 @@ fn read_input() -> Input {
 
 fn solve(input: &Input) -> State {
     let solution = State::init(&input);
-    let solution = annealing(&input, solution, 10.0);
+    let solution = annealing(&input, solution, 1.0);
     solution
 }
 
@@ -198,12 +196,12 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
         let mod_station = rng.gen_range(0..100) < 10;
 
         if mod_station {
-            let station_id = input.n + 1 + rng.gen_range(0..input.m);
+            let station_id = input.n + rng.gen_range(0..input.m);
             let mut temp_orders = solution.orders.clone();
             temp_orders.retain(|&v| v != station_id);
 
             let mut p = solution.points[station_id];
-            const DELTA: i32 = 50;
+            const DELTA: i32 = 100;
             p.x = rng.gen_range((p.x - DELTA).max(0)..=(p.x + DELTA).min(MAP_SIZE));
             p.y = rng.gen_range((p.y - DELTA).max(0)..=(p.y + DELTA).min(MAP_SIZE));
             let mut new_orders = vec![];
@@ -294,16 +292,16 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
 }
 
 fn get_score_mul(v: usize, threshold: usize) -> i64 {
-    if v > threshold {
-        1
-    } else {
+    if v < threshold {
         MULTIPLIER
+    } else {
+        1
     }
 }
 
 fn write_output(input: &Input, solution: &State) {
     for i in 0..input.m {
-        let p = solution.points[i + input.n + 1];
+        let p = solution.points[i + input.n];
         println!("{} {}", p.x, p.y);
     }
 

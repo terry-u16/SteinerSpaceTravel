@@ -12,11 +12,11 @@ points = []
 
 with open(f"tools/in/{seed:04}.txt") as f:
     n, m = map(int, f.readline().split())
-    plt.plot(500, 500, "*", markersize=15)
-    points.append((500, 500))
-    for _ in range(n):
+    for i in range(n):
         x, y = map(int, f.readline().split())
-        plt.plot(x, y, ".")
+        marker = "*" if i == 0 else "."
+        marker_size = 15 if i == 0 else 8
+        plt.plot(x, y, marker, markersize=marker_size)
         points.append((x, y))
 
 with open(output) as f:
