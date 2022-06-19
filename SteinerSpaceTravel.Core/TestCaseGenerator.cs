@@ -1,6 +1,8 @@
-﻿namespace SteinerSpaceTravel.Core;
+﻿using SteinerSpaceTravel.Core.Utilities;
 
-public class TestCaseGenerator
+namespace SteinerSpaceTravel.Core;
+
+public static class TestCaseGenerator
 {
     private const int N = 100;
     private const int M = 8;

@@ -1,6 +1,6 @@
-﻿namespace SteinerSpaceTravel.Core;
+﻿namespace SteinerSpaceTravel.Core.Checkers;
 
-public static class ConstraintChecker
+internal static class SolutionConstraintChecker
 {
     private const int MinCoordinate = 0;
     private const int MaxCoordinate = 1000;
@@ -31,7 +31,7 @@ public static class ConstraintChecker
             if (type == AstronomicalType.Planet)
             {
                 visited[index] = true;
-            }   
+            }
         }
 
         return visited.All(v => v);

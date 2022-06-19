@@ -1,4 +1,6 @@
-﻿namespace SteinerSpaceTravel.Core;
+﻿using SteinerSpaceTravel.Core.Checkers;
+
+namespace SteinerSpaceTravel.Core.Parsers;
 
 public static class SolutionParser
 {
@@ -23,8 +25,8 @@ public static class SolutionParser
         {
             var line = input[i].SplitAndTrim();
 
-            if (line.Length != 2 || !int.TryParse(line[0], out var x) || !int.TryParse(line[1], out var y) || 
-                !ConstraintChecker.IsXInRange(x) || !ConstraintChecker.IsYInRange(y))
+            if (line.Length != 2 || !int.TryParse(line[0], out var x) || !int.TryParse(line[1], out var y) ||
+                !SolutionConstraintChecker.IsXInRange(x) || !SolutionConstraintChecker.IsYInRange(y))
             {
                 throw new ParseFailedException(GetInvalidInputMessage(i));
             }
@@ -78,7 +80,7 @@ public static class SolutionParser
 
             var type = ParseAstronomicalType(line[0], i + lineOffset);
             index--;
-            if (!ConstraintChecker.IsVisitIndexInRange(testCase, type, index))
+            if (!SolutionConstraintChecker.IsVisitIndexInRange(testCase, type, index))
             {
                 throw new ParseFailedException(GetInvalidInputMessage(i + lineOffset));
             }
@@ -91,17 +93,17 @@ public static class SolutionParser
 
     private static void CheckValidVisits(TestCase testCase, Visit[] visits)
     {
-        if (!ConstraintChecker.IsValidStart(visits))
+        if (!SolutionConstraintChecker.IsValidStart(visits))
         {
             throw new ParseFailedException(InvalidStartMessage);
         }
 
-        if (!ConstraintChecker.IsValidGoal(visits))
+        if (!SolutionConstraintChecker.IsValidGoal(visits))
         {
             throw new ParseFailedException(InvalidGoalMessage);
         }
 
-        if (!ConstraintChecker.HasVisitedAll(testCase, visits))
+        if (!SolutionConstraintChecker.HasVisitedAll(testCase, visits))
         {
             throw new ParseFailedException(NotVisitedAllMessage);
         }

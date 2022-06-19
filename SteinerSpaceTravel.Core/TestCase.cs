@@ -6,7 +6,9 @@ public class TestCase
 {
     public int N { get; }
     public int M { get; }
-    public Point[] Points { get; }
+
+    private readonly Point[] _points;
+    public ReadOnlySpan<Point> Points => _points;
 
     private const int MaxN = int.MaxValue / 2;
     private const int MaxM = int.MaxValue / 2;
@@ -32,7 +34,7 @@ public class TestCase
 
         N = n;
         M = m;
-        Points = points;
+        _points = points;
     }
 
     public override string ToString()

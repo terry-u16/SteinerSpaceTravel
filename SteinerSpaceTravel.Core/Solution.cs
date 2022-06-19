@@ -2,12 +2,15 @@
 
 public class Solution
 {
-    public Point[] Stations { get; }
-    public Visit[] Visits { get; }
+    private readonly Point[] _stations;
+    public ReadOnlySpan<Point> Stations => _stations;
+
+    private readonly Visit[] _visits;
+    public ReadOnlySpan<Visit> Visits => _visits;
 
     public Solution(Point[] stations, Visit[] visits)
     {
-        Stations = stations;
-        Visits = visits;
+        _stations = stations;
+        _visits = visits;
     }
 }

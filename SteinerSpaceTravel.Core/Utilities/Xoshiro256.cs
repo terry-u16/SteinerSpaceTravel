@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
 
-namespace SteinerSpaceTravel.Core;
+namespace SteinerSpaceTravel.Core.Utilities;
 
 /// <summary>
 /// xoshiro256**
@@ -9,7 +9,7 @@ namespace SteinerSpaceTravel.Core;
 /// <remarks>
 /// <see cref="https://prng.di.unimi.it/"/>
 /// </remarks>
-public class Xoshiro256
+internal class Xoshiro256
 {
     private ulong _s0;
     private ulong _s1;
@@ -86,9 +86,9 @@ public class Xoshiro256
     /// </remarks>
     private static ulong SplitMix64(ref ulong x)
     {
-        var z = (x += 0x9e3779b97f4a7c15UL);
-        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9UL;
-        z = (z ^ (z >> 27)) * 0x94d049bb133111ebUL;
-        return z ^ (z >> 31);
+        var z = x += 0x9e3779b97f4a7c15UL;
+        z = (z ^ z >> 30) * 0xbf58476d1ce4e5b9UL;
+        z = (z ^ z >> 27) * 0x94d049bb133111ebUL;
+        return z ^ z >> 31;
     }
 }

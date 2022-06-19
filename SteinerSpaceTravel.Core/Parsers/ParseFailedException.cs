@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SteinerSpaceTravel.Core;
+namespace SteinerSpaceTravel.Core.Parsers;
 
 [Serializable]
 public class ParseFailedException : Exception
