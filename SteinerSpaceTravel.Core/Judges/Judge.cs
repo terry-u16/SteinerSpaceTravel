@@ -3,7 +3,7 @@
 public static class Judge
 {
     private const long PlanetMultiplier = 5;
-    private const long BaseNumerator = 100_000_000;
+    private const long BaseNumerator = 1_000_000_000;
     private const long BaseDenominator = 1_000;
 
     public static long CalculateScore(Solution solution)
