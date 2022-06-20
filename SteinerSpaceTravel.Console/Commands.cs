@@ -38,7 +38,7 @@ public class Commands : ConsoleAppBase
 
                 if (!ulong.TryParse(line, out var seed))
                 {
-                    System.Console.WriteLine($"{line}行目のパースに失敗しました。");
+                    System.Console.WriteLine($"{line}行目のパースに失敗しました。seedは64bit符号なし整数である必要があります。");
                     return;
                 }
 
@@ -52,7 +52,7 @@ public class Commands : ConsoleAppBase
         }
         catch (IOException ex)
         {
-            System.Console.WriteLine(ex.Message);
+            WriteErrorMessage(ex);
         }
     }
 
@@ -78,11 +78,11 @@ public class Commands : ConsoleAppBase
         }
         catch (IOException ex)
         {
-            System.Console.WriteLine(ex);
+            WriteErrorMessage(ex);
         }
         catch (ParseFailedException ex)
         {
-            System.Console.WriteLine(ex);
+            WriteErrorMessage(ex);
         }
     }
 
@@ -97,5 +97,12 @@ public class Commands : ConsoleAppBase
             System.Console.WriteLine($"ファイルが存在しません: {path}");
             return false;
         }
+    }
+
+    private static void WriteErrorMessage(Exception ex)
+    {
+        System.Console.ForegroundColor = ConsoleColor.Red;
+        System.Console.WriteLine(ex.Message);
+        System.Console.ResetColor();
     }
 }
