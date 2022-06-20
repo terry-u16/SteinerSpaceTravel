@@ -24,7 +24,7 @@ public static class Judge
         return totalEnergy;
     }
 
-    private static long CalculateEnergy(Solution solution, int prevIndex, int nextIndex)
+    internal static long CalculateEnergy(Solution solution, int prevIndex, int nextIndex)
     {
         var prevType = solution.GetTypeAt(prevIndex);
         var prevPoint = solution.GetPointAt(prevIndex);

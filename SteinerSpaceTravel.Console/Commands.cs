@@ -1,4 +1,5 @@
-﻿using SteinerSpaceTravel.Core.Generators;
+﻿using SixLabors.ImageSharp;
+using SteinerSpaceTravel.Core.Generators;
 using SteinerSpaceTravel.Core.Judges;
 using SteinerSpaceTravel.Core.Parsers;
 using System.Text;
@@ -8,7 +9,7 @@ namespace SteinerSpaceTravel.Console;
 public class Commands : ConsoleAppBase
 {
     [Command("gen", "Generate testcases.")]
-    public void GenerateTestCases([Option("s", "Path to seed file.")] string seeds)
+    public void GenerateTestCases([Option("s", "seedファイルのパス")] string seeds)
     {
         const string directoryPath = "in";
 
@@ -57,8 +58,9 @@ public class Commands : ConsoleAppBase
     }
 
     [Command("judge", "Judge a testcase.")]
-    public void JudgeTestCase([Option("i", "Path to input file.")] string input,
-        [Option("o", "Path to output file.")] string output)
+    public void JudgeTestCase([Option("i", "inputファイルのパス")] string input,
+        [Option("o", "outputファイルのパス")] string output,
+        [Option("v", "ビジュアライズ結果 (png) の出力先")] string? visualize = null)
     {
         try
         {
@@ -75,6 +77,13 @@ public class Commands : ConsoleAppBase
             var score = Judge.CalculateScore(solution);
 
             System.Console.WriteLine($"Score: {score}");
+
+            if (visualize is not null)
+            {
+                var image = Visualizer.Visualize(solution);
+                image.SaveAsPng(visualize);
+                System.Console.WriteLine($@"ビジュアライズ結果を""{visualize}""に保存しました。");
+            }
         }
         catch (IOException ex)
         {

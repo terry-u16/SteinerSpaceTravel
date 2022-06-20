@@ -1,4 +1,6 @@
-﻿namespace SteinerSpaceTravel.Core;
+﻿using SixLabors.ImageSharp;
+
+namespace SteinerSpaceTravel.Core;
 
 public readonly record struct Point(int X, int Y)
 {
@@ -8,4 +10,6 @@ public readonly record struct Point(int X, int Y)
         var dy = (long)Y - other.Y;
         return dx * dx + dy * dy;
     }
+
+    internal PointF ToPointF() => new(X, Y);
 }
