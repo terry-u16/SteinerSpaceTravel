@@ -14,7 +14,7 @@ public static class SolutionParser
         var stations = ParseStations(input[..testCase.M]);
         var visits = ParseVisits(testCase, input[testCase.M..]);
 
-        return new Solution(stations, visits);
+        return new Solution(testCase, stations, visits);
     }
 
     private static Point[] ParseStations(ReadOnlySpan<string> input)

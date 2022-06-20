@@ -1,4 +1,4 @@
-﻿using SteinerSpaceTravel.Core;
+﻿using SteinerSpaceTravel.Core.Generators;
 using System.Text;
 
 namespace SteinerSpaceTravel.Console;

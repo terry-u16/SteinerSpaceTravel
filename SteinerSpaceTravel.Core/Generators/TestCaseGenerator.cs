@@ -1,6 +1,6 @@
 ﻿using SteinerSpaceTravel.Core.Utilities;
 
-namespace SteinerSpaceTravel.Core;
+namespace SteinerSpaceTravel.Core.Generators;
 
 public static class TestCaseGenerator
 {
@@ -21,7 +21,7 @@ public static class TestCaseGenerator
             {
                 var x = random.Next(ScatterRange, MapSize - ScatterRange + 1);
                 var y = random.Next(ScatterRange, MapSize - ScatterRange + 1);
-                var pivot = new Point(x, y); 
+                var pivot = new Point(x, y);
                 var ok = pivots.Take(i).All(p => pivot.CalculateSquaredDistance(p) > ScatterRange * ScatterRange);
 
                 if (ok)
