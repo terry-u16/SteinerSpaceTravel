@@ -8,7 +8,7 @@ namespace SteinerSpaceTravel.Console;
 public class Commands : ConsoleAppBase
 {
     [Command("gen", "Generate testcases.")]
-    public void GenerateTestCases([Option(0, "path to seed file.")] string path)
+    public void GenerateTestCases([Option("s", "Path to seed file.")] string seeds)
     {
         const string directoryPath = "in";
 
@@ -19,12 +19,12 @@ public class Commands : ConsoleAppBase
                 Directory.CreateDirectory(directoryPath);
             }
 
-            if (!CheckFileExistence(path))
+            if (!CheckFileExistence(seeds))
             {
                 return;
             }
 
-            using var reader = new StreamReader(path, Encoding.UTF8);
+            using var reader = new StreamReader(seeds, Encoding.UTF8);
 
             var outputCount = 0;
 
@@ -57,18 +57,18 @@ public class Commands : ConsoleAppBase
     }
 
     [Command("judge", "Judge a testcase.")]
-    public void JudgeTestCase([Option(0, "Path to input file.")] string inputPath,
-        [Option(1, "Path to output file.")] string outputPath)
+    public void JudgeTestCase([Option("i", "Path to input file.")] string input,
+        [Option("o", "Path to output file.")] string output)
     {
         try
         {
-            if (!CheckFileExistence(inputPath) || !CheckFileExistence(outputPath))
+            if (!CheckFileExistence(input) || !CheckFileExistence(output))
             {
                 return;
             }
 
-            var testCaseText = File.ReadAllLines(inputPath);
-            var solutionText = File.ReadAllLines(outputPath);
+            var testCaseText = File.ReadAllLines(input);
+            var solutionText = File.ReadAllLines(output);
 
             var testCase = TestCaseParser.Parse(testCaseText);
             var solution = SolutionParser.Parse(testCase, solutionText);
