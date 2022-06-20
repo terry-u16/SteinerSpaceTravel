@@ -307,7 +307,11 @@ fn write_output(input: &Input, solution: &State) {
 
     println!("{}", solution.orders.len());
 
-    for v in solution.orders.iter() {
-        println!("{}", v);
+    for &v in solution.orders.iter() {
+        if v < input.n {
+            println!("1 {}", v + 1);
+        } else {
+            println!("2 {}", v + 1 - input.n);
+        }
     }
 }
