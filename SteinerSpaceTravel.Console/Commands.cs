@@ -9,7 +9,7 @@ namespace SteinerSpaceTravel.Console;
 public class Commands : ConsoleAppBase
 {
     [Command("gen", "Generate testcases.")]
-    public void GenerateTestCases([Option("s", "seedファイルのパス")] string seeds)
+    public async Task GenerateTestCases([Option("s", "seedファイルのパス")] string seeds)
     {
         const string directoryPath = "in";
 
@@ -29,7 +29,7 @@ public class Commands : ConsoleAppBase
 
             var outputCount = 0;
 
-            while (reader.ReadLine() is string line)
+            while (await reader.ReadLineAsync() is string line)
             {
                 line = line.Trim();
                 if (line.Length == 0)
@@ -45,7 +45,7 @@ public class Commands : ConsoleAppBase
 
                 var testCase = TestCaseGenerator.Generate(seed);
                 var outputPath = Path.Join(directoryPath, $"{seed:0000}.txt");
-                File.WriteAllText(outputPath, testCase + Environment.NewLine);
+                await File.WriteAllTextAsync(outputPath, testCase + Environment.NewLine, Encoding.UTF8);
                 outputCount++;
             }
 
@@ -58,7 +58,7 @@ public class Commands : ConsoleAppBase
     }
 
     [Command("judge", "Judge a testcase.")]
-    public void JudgeTestCase([Option("i", "inputファイルのパス")] string input,
+    public async Task JudgeTestCase([Option("i", "inputファイルのパス")] string input,
         [Option("o", "outputファイルのパス")] string output,
         [Option("v", "ビジュアライズ結果 (png) の出力先")] string? visualize = null)
     {
@@ -69,8 +69,8 @@ public class Commands : ConsoleAppBase
                 return;
             }
 
-            var testCaseText = File.ReadAllLines(input);
-            var solutionText = File.ReadAllLines(output);
+            var testCaseText = await File.ReadAllLinesAsync(input, Encoding.UTF8);
+            var solutionText = await File.ReadAllLinesAsync(output, Encoding.UTF8);
 
             var testCase = TestCaseParser.Parse(testCaseText);
             var solution = SolutionParser.Parse(testCase, solutionText);
@@ -80,8 +80,8 @@ public class Commands : ConsoleAppBase
 
             if (visualize is not null)
             {
-                var image = Visualizer.Visualize(solution);
-                image.SaveAsPng(visualize);
+                using var image = Visualizer.Visualize(solution);
+                await image.SaveAsPngAsync(visualize);
                 System.Console.WriteLine($@"ビジュアライズ結果を""{visualize}""に保存しました。");
             }
         }
