@@ -17,8 +17,8 @@ public static class Visualizer
     private const int CircleRadius = 7;
     private const int RectangularSize = CircleRadius * 2;
     private const int PathWidth = 3;
-    private const double MinSqrtEnergy = 0.0;
-    private const double MaxSqrtEnergy = 500.0;
+    private const double MinLogEnergy = 3.0;
+    private const double MaxLogEnergy = 6.0;
     private static readonly PointF Offset = new(CanvasOffset, CanvasOffset);
     private static readonly PointF RectangularOffset = new(-RectangularSize * 0.5f, -RectangularSize * 0.5f);
     private static readonly SizeF Rectangular = new(RectangularSize, RectangularSize);
@@ -97,10 +97,14 @@ public static class Visualizer
 
     private static Color InterpolateColor(long energy)
     {
-        var logEnergy = Math.Sqrt(energy);
-        var doubleX = (logEnergy - MinSqrtEnergy) / (MaxSqrtEnergy - MinSqrtEnergy);
-        doubleX = Math.Min(doubleX, 1.0);
+        // 違いが分かりやすいようにlogスケールにする
+        var logEnergy = Math.Log10(energy + 1);
+        var doubleX = (logEnergy - MinLogEnergy) / (MaxLogEnergy - MinLogEnergy);
+
+        // [0, 1]の範囲にクリッピング
+        doubleX = Math.Max(Math.Min(doubleX, 1.0), 0.0);
         var x = (float)doubleX;
+
         var minVector = (Vector4)MinEnergyColor;
         var maxVector = (Vector4)MaxEnergyColor;
         var colorVector = minVector * (1 - x) + maxVector * x;

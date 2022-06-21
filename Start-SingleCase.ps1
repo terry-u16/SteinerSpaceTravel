@@ -6,7 +6,8 @@ param(
 
 
 Push-Location .\solver
-$inputPath = "..\tools\in\{0:0000}.txt" -f $seed
+$inputPath = "..\in\{0:0000}.txt" -f $seed
 Get-Content $inputPath | cargo run --release > ../out.txt
 Pop-Location
-python .\vis_output.py -s $seed -o .\out.txt
+$inputPath = ".\in\{0:0000}.txt" -f $seed
+dotnet run -c Release --project .\SteinerSpaceTravel.Console\SteinerSpaceTravel.Console.csproj -- judge -i $inputPath -o out.txt -v vis.png
