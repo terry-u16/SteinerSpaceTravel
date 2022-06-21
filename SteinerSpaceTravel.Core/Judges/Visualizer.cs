@@ -53,7 +53,7 @@ public static class Visualizer
     private static IImageProcessingContext DrawPlanets(IImageProcessingContext context, TestCase testCase)
     {
         var points = testCase.Points;
-        var planetPath0 = new Star(points[0].ToPointF() + Offset, 5, StarInnerRadii, StarOuterRadii);
+        var planetPath0 = new Star(points[0].ToPointF() + Offset, 5, StarInnerRadii, StarOuterRadii, MathF.PI);
         context = context.Fill(Color.DodgerBlue, planetPath0);
 
         for (var i = 1; i < points.Length; i++)
