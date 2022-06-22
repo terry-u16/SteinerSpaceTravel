@@ -69,7 +69,7 @@ public static class SolutionParser
     {
         var visits = new Visit[input.Length];
 
-        for (var i = 0; i < input.Length; i++)
+        for (var i = 0; i < visits.Length; i++)
         {
             var line = input[i].SplitAndTrim();
 

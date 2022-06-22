@@ -43,7 +43,7 @@ public static class TestCaseParser
 
         var points = new Point[n];
 
-        for (int i = 0; i < input.Length; i++)
+        for (int i = 0; i < points.Length; i++)
         {
             var line = input[i].SplitAndTrim();
             if (line.Length != 2)
