@@ -1,10 +1,5 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using System.Numerics;
-using Path = SixLabors.ImageSharp.Drawing.Path;
+﻿using SkiaSharp;
+using SteinerSpaceTravel.Core.Utilities;
 
 namespace SteinerSpaceTravel.Core.Judges;
 
@@ -12,102 +7,108 @@ public static class Visualizer
 {
     private const int CanvasSize = 1000 + 2 * CanvasOffset;
     private const int CanvasOffset = 50;
-    private const int StarInnerRadii = 7;
-    private const int StarOuterRadii = 15;
+    private const int EarthRadius = 10;
     private const int CircleRadius = 7;
     private const int RectangularSize = CircleRadius * 2;
+    private const int RectangularSizeHalf = RectangularSize / 2;
     private const int PathWidth = 3;
     private const double MinLogEnergy = 3.0;
     private const double MaxLogEnergy = 6.0;
-    private static readonly PointF Offset = new(CanvasOffset, CanvasOffset);
-    private static readonly PointF RectangularOffset = new(-RectangularSize * 0.5f, -RectangularSize * 0.5f);
-    private static readonly SizeF Rectangular = new(RectangularSize, RectangularSize);
-    private static readonly Color MinEnergyColor = Color.FromRgb(0x20, 0x20, 0x20);
-    private static readonly Color MaxEnergyColor = Color.FromRgb(0xFF, 0x20, 0x20);
+    private static readonly SKPoint Offset = new(CanvasOffset, CanvasOffset);
+    private static readonly SKColor MinEnergyColor = new(0x20, 0x20, 0x20);
+    private static readonly SKColor MaxEnergyColor = new(0xFF, 0x20, 0x20);
+    private static readonly SKColor White = new(255, 255, 255);
+    private static readonly SKColor DodgerBlue = new(0x1E, 0x90, 0xFF);
+    private static readonly SKColor Gold = new(0xFF, 0xD7, 0x00);
+    private static readonly SKColor LightSlateGrey = new(0x77, 0x88, 0x99);
+    
 
-    public static Image<Rgba32> Visualize(TestCase testCase)
+    public static SKBitmap Visualize(TestCase testCase)
     {
-        var image = new Image<Rgba32>(CanvasSize, CanvasSize, Color.White);
-
-        image.Mutate(context => DrawPlanets(context, testCase));
-        return image;
+        var bitmap = new SKBitmap(CanvasSize, CanvasSize, SKColorType.Rgba8888, SKAlphaType.Opaque);
+        var canvas = new SKCanvas(bitmap);
+        canvas.Clear(White);
+        DrawPlanets(canvas, testCase);
+        return bitmap;
     }
 
 
-    public static Image<Rgba32> Visualize(Solution solution)
+    public static SKBitmap Visualize(Solution solution)
     {
-        var image = new Image<Rgba32>(CanvasSize, CanvasSize, Color.White);
-
-        image.Mutate(context => DrawSolutionAll(context, solution));
-        return image;
+        var bitmap = new SKBitmap(CanvasSize, CanvasSize, SKColorType.Rgba8888, SKAlphaType.Opaque);
+        var canvas = new SKCanvas(bitmap);
+        canvas.Clear(White);
+        DrawPlanets(canvas, solution.TestCase);
+        DrawStations(canvas, solution);
+        DrawLines(canvas, solution);
+        return bitmap;
     }
 
-    private static IImageProcessingContext DrawSolutionAll(IImageProcessingContext context, Solution solution)
-    {
-        context = DrawPlanets(context, solution.TestCase);
-        context = DrawStations(context, solution);
-        context = DrawLines(context, solution);
-        return context;
-    }
-
-    private static IImageProcessingContext DrawPlanets(IImageProcessingContext context, TestCase testCase)
+    private static void DrawPlanets(SKCanvas canvas, TestCase testCase)
     {
         var points = testCase.Points;
-        var planetPath0 = new Star(points[0].ToPointF() + Offset, 5, StarInnerRadii, StarOuterRadii, MathF.PI);
-        context = context.Fill(Color.DodgerBlue, planetPath0);
-
-        for (var i = 1; i < points.Length; i++)
+        using var paint = new SKPaint
         {
-            var planetPath = new EllipsePolygon(points[i].ToPointF() + Offset, CircleRadius);
-            context = context.Fill(Color.Gold, planetPath);
-        }
+            Style = SKPaintStyle.Fill,
+            Color = DodgerBlue,
+            IsAntialias = true
+        };
 
-        return context;
+        canvas.DrawCircle(points[0].ToSkPoint() + Offset, EarthRadius, paint);
+        paint.Color = Gold;
+
+        foreach (var point in points[1..])
+        {
+            canvas.DrawCircle(point.ToSkPoint() + Offset, CircleRadius, paint);
+        }
     }
 
-    private static IImageProcessingContext DrawStations(IImageProcessingContext context, Solution solution)
+    private static void DrawStations(SKCanvas canvas, Solution solution)
     {
         var stations = solution.Stations;
-
-        for (var i = 0; i < stations.Length; i++)
+        using var paint = new SKPaint
         {
-            var stationPath = new RectangularPolygon(stations[i].ToPointF() + Offset + RectangularOffset, Rectangular);
-            context = context.Fill(Color.LightSlateGrey, stationPath);
-        }
+            Style = SKPaintStyle.Fill,
+            Color = LightSlateGrey,
+            IsAntialias = true
+        };
 
-        return context;
+        foreach (var point in stations)
+        {
+            var p = point.ToSkPoint() + Offset;
+            var x = p.X - RectangularSizeHalf;
+            var y = p.Y - RectangularSizeHalf;
+            canvas.DrawRect(x, y, RectangularSize, RectangularSize, paint);
+        }
     }
 
-    private static IImageProcessingContext DrawLines(IImageProcessingContext context, Solution solution)
+    private static void DrawLines(SKCanvas canvas, Solution solution)
     {
-        for (var i = 0; i + 1 < solution.Visits.Length; i++)
+        using var paint = new SKPaint
         {
-            var prevPoint = solution.GetPointAt(i).ToPointF() + Offset;
-            var nextPoint = solution.GetPointAt(i + 1).ToPointF() + Offset;
-            var energy = Judge.CalculateEnergy(solution, i, i + 1);
-            var color = InterpolateColor(energy);
-            var lineSegment = new LinearLineSegment(prevPoint, nextPoint);
-            var pen = Pens.Solid(color, PathWidth);
-            var path = new Path(lineSegment);
-            context = context.Draw(pen, path);
-        }
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = PathWidth,
+            IsAntialias = true
+        };
 
-        return context;
+        for (int i = 0; i + 1 < solution.Visits.Length; i++)
+        {
+            var prevPoint = solution.GetPointAt(i).ToSkPoint() + Offset;
+            var nextPoint = solution.GetPointAt(i + 1).ToSkPoint() + Offset;
+            var energy = Judge.CalculateEnergy(solution, i, i + 1);
+            paint.Color = InterpolateColor(energy);
+            canvas.DrawLine(prevPoint, nextPoint, paint);
+        }
     }
 
-    private static Color InterpolateColor(long energy)
+    private static SKColor InterpolateColor(long energy)
     {
         // 違いが分かりやすいようにlogスケールにする
         var logEnergy = Math.Log10(energy + 1);
-        var doubleX = (logEnergy - MinLogEnergy) / (MaxLogEnergy - MinLogEnergy);
+        var x = (logEnergy - MinLogEnergy) / (MaxLogEnergy - MinLogEnergy);
 
         // [0, 1]の範囲にクリッピング
-        doubleX = Math.Max(Math.Min(doubleX, 1.0), 0.0);
-        var x = (float)doubleX;
-
-        var minVector = (Vector4)MinEnergyColor;
-        var maxVector = (Vector4)MaxEnergyColor;
-        var colorVector = minVector * (1 - x) + maxVector * x;
-        return new Color(colorVector);
+        x = Math.Max(Math.Min(x, 1.0), 0.0);
+        return MinEnergyColor.Blend(MaxEnergyColor, x);
     }
 }

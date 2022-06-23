@@ -1,0 +1,42 @@
+﻿@page "/"
+@using SteinerSpaceTravel.Web.Services
+@inject Services.VisualizeService VisualizeService
+@inject IJSRuntime JsRuntime;
+
+<PageTitle>Visualizer</PageTitle>
+
+<h1>Visualizer</h1>
+
+<p>
+    <h2>Seed</h2>
+    <input type="number" min="@ulong.MinValue" max="@ulong.MaxValue" @bind-value="@VisualizeService.Seed" />
+</p>
+<p>
+    <h2>Input</h2>
+    <textarea rows="4" cols="40" @bind="@VisualizeService.Input"></textarea>
+</p>
+<p>
+    <h2>Output</h2>
+    <textarea rows="4" cols="40" @bind="@VisualizeService.Output"></textarea>
+</p>
+<hr />
+
+<canvas @ref="_canvasElement" width="1100" height="1100"></canvas>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+@code {
+
+   private ElementReference _canvasElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var canvasService = new CanvasService(JsRuntime, _canvasElement);
+        var data = VisualizeService.Visualize();
+        await canvasService.DrawPixelsAsync(data);
+        Console.WriteLine(sw.Elapsed);
+    }
+}

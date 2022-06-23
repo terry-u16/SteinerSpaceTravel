@@ -1,7 +1,7 @@
-﻿using SixLabors.ImageSharp;
-using SteinerSpaceTravel.Core.Generators;
+﻿using SteinerSpaceTravel.Core.Generators;
 using SteinerSpaceTravel.Core.Judges;
 using SteinerSpaceTravel.Core.Parsers;
+using System.Diagnostics;
 using System.Text;
 
 namespace SteinerSpaceTravel.Console;
@@ -80,8 +80,11 @@ public class Commands : ConsoleAppBase
 
             if (visualize is not null)
             {
+                var sw = Stopwatch.StartNew();
                 using var image = Visualizer.Visualize(solution);
-                await image.SaveAsPngAsync(visualize);
+                var data = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+                await File.WriteAllBytesAsync(visualize, data.ToArray());
+                System.Console.WriteLine(sw.Elapsed);
                 System.Console.WriteLine($@"ビジュアライズ結果を""{visualize}""に保存しました。");
             }
         }

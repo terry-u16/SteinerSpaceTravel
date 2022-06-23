@@ -1,4 +1,4 @@
-﻿using SixLabors.ImageSharp;
+﻿using SkiaSharp;
 
 namespace SteinerSpaceTravel.Core;
 
@@ -11,5 +11,5 @@ public readonly record struct Point(int X, int Y)
         return dx * dx + dy * dy;
     }
 
-    internal PointF ToPointF() => new(X, Y);
+    internal SKPoint ToSkPoint() => new(X, Y);
 }
