@@ -1,6 +1,6 @@
 ﻿@page "/"
 @using SteinerSpaceTravel.Web.Services
-@inject Services.VisualizeService VisualizeService
+@inject VisualizeService VisualizeService
 @inject IJSRuntime JsRuntime;
 
 <PageTitle>Visualizer</PageTitle>
@@ -33,10 +33,8 @@ Welcome to your new app.
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var sw = System.Diagnostics.Stopwatch.StartNew();
         var canvasService = new CanvasService(JsRuntime, _canvasElement);
         var data = VisualizeService.Visualize();
         await canvasService.DrawPixelsAsync(data);
-        Console.WriteLine(sw.Elapsed);
     }
 }
