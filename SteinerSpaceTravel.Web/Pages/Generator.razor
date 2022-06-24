@@ -1,20 +1,21 @@
 ﻿@page "/generator"
 @using SteinerSpaceTravel.Web.Services
-@inject VisualizeService VisualizeService
+@inject GenerateService GenerateService
 
 <PageTitle>Generator</PageTitle>
 
 <h1>Generator</h1>
 
-<p role="status">Current count: @VisualizeService.Seed</p>
+<div class="seed-section">
+    <div class="input-label">Seed</div>
+    <input type="number" min="@ulong.MinValue" max="@ulong.MaxValue" disabled="@GenerateService.IsGenerating" @bind-value="@GenerateService.SeedFrom" />
+    ～
+    <input type="number" min="@ulong.MinValue" max="@ulong.MaxValue" disabled="@GenerateService.IsGenerating" @bind-value="@GenerateService.SeedTo" />
+</div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<div>
+    <button class="btn btn-primary" disabled="@(!GenerateService.CanGenerate || GenerateService.IsGenerating)" @onclick="@GenerateService.DownloadSeedsAsync">Download</button>
+    <button class="btn btn-primary" disabled="@(!GenerateService.IsGenerating)" @onclick="@GenerateService.CancelDownloading">Cancel</button>
+</div>
 
-@code {
-    private int currentCount = 0;
-
-    private void IncrementCount()
-    {
-        VisualizeService.Seed++;
-    }
-}
+<p>@GenerateService.Message</p>
