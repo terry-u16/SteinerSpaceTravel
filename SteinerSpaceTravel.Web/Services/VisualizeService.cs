@@ -44,11 +44,15 @@ public class VisualizeService
 
     private string _output;
 
-    public long Score { get; set; }
+    public long Score { get; private set; }
 
-    public string ErrorMessage { get; set; }
+    public string ErrorMessage { get; private set; }
 
-    private static readonly string[] NewLines = new string[] { "\r\n", "\r", "\n" };
+    private TestCase? _testCase;
+
+    private Solution? _solution;
+
+    private static readonly string[] NewLines = { "\r\n", "\r", "\n" };
 
     public VisualizeService()
     {
@@ -57,19 +61,35 @@ public class VisualizeService
         ErrorMessage = string.Empty;
         Seed = 0;
         Score = 0;
+        CalculateScore();
     }
 
-    public void CalculateScore()
+    public void Visualize(SKCanvas canvas, SKImageInfo imageInfo)
     {
-        TestCase testCase;
-        Solution solution;
+        if (_testCase is null)
+        {
+            Visualizer.Visualize(canvas, imageInfo);
+        }
+        else if (_solution is null)
+        {
+            Visualizer.Visualize(_testCase, canvas, imageInfo);
+        }
+        else
+        {
+            Visualizer.Visualize(_solution, canvas, imageInfo);
+        }
+    }
 
+    private void CalculateScore()
+    {
+        _testCase = null;
+        _solution = null;
         Score = 0;
         ErrorMessage = string.Empty;
 
         try
         {
-            testCase = TestCaseParser.Parse(Input.Split(NewLines, StringSplitOptions.TrimEntries));
+            _testCase = TestCaseParser.Parse(Input.Split(NewLines, StringSplitOptions.TrimEntries));
         }
         catch (ParseFailedException ex)
         {
@@ -79,7 +99,7 @@ public class VisualizeService
 
         try
         {
-            solution = SolutionParser.Parse(testCase, Output.Split(NewLines, StringSplitOptions.TrimEntries));
+            _solution = SolutionParser.Parse(_testCase, Output.Split(NewLines, StringSplitOptions.TrimEntries));
         }
         catch (ParseFailedException ex)
         {
@@ -91,34 +111,6 @@ public class VisualizeService
             return;
         }
 
-        Score = Judge.CalculateScore(solution);
-    }
-
-    public void Visualize(SKCanvas canvas, SKImageInfo imageInfo)
-    {
-        TestCase testCase;
-        Solution solution;
-
-        try
-        {
-            testCase = TestCaseParser.Parse(Input.Split(NewLines, StringSplitOptions.TrimEntries));
-        }
-        catch (ParseFailedException)
-        {
-            Visualizer.Visualize(canvas, imageInfo);
-            return;
-        }
-
-        try
-        {
-            solution = SolutionParser.Parse(testCase, Output.Split(NewLines, StringSplitOptions.TrimEntries));
-        }
-        catch (ParseFailedException)
-        {
-            Visualizer.Visualize(testCase, canvas, imageInfo);
-            return;
-        }
-
-        Visualizer.Visualize(solution, canvas, imageInfo);
+        Score = Judge.CalculateScore(_solution);
     }
 }
