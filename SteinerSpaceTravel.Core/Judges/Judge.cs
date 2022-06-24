@@ -1,4 +1,7 @@
-﻿namespace SteinerSpaceTravel.Core.Judges;
+﻿using SteinerSpaceTravel.Core.Checkers;
+using SteinerSpaceTravel.Core.Parsers;
+
+namespace SteinerSpaceTravel.Core.Judges;
 
 public static class Judge
 {
@@ -6,10 +9,25 @@ public static class Judge
     private const long BaseNumerator = 1_000_000_000;
     private const long BaseDenominator = 1_000;
 
-    public static long CalculateScore(Solution solution)
+    public static (long score, string? message) CalculateScore(Solution solution)
     {
+        if (!SolutionConstraintChecker.IsValidStart(solution.Visits))
+        {
+            return (0, SolutionConstraintChecker.InvalidStartMessage);
+        }
+
+        if (!SolutionConstraintChecker.IsValidGoal(solution.Visits))
+        {
+            return (0, SolutionConstraintChecker.InvalidGoalMessage);
+        }
+
+        if (!SolutionConstraintChecker.HasVisitedAll(solution.TestCase, solution.Visits))
+        {
+            return (0, SolutionConstraintChecker.NotVisitedAllMessage);
+        }
+
         var totalEnergy = CalculateTotalEnergy(solution);
-        return ToScore(totalEnergy);
+        return (ToScore(totalEnergy), null);
     }
 
     private static long CalculateTotalEnergy(Solution solution)

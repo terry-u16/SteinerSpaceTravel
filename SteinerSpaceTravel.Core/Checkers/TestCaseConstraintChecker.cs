@@ -2,8 +2,8 @@
 
 internal static class TestCaseConstraintChecker
 {
-    private const int MinCoordinate = 0;
-    private const int MaxCoordinate = 1000;
+    public const int MinCoordinate = 0;
+    public const int MaxCoordinate = 1000;
 
     public static bool IsNInRange(int n) => n > 0;
 

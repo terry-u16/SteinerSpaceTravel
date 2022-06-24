@@ -51,10 +51,15 @@ public static class TestCaseParser
                 throw new ParseFailedException(GetInvalidInputMessage(i + lineOffset));
             }
 
-            if (!int.TryParse(line[0], out var x) || !int.TryParse(line[1], out var y)
-                || !TestCaseConstraintChecker.IsXInRange(x) || !TestCaseConstraintChecker.IsYInRange(y))
+            if (!int.TryParse(line[0], out var x) || !int.TryParse(line[1], out var y))
             {
                 throw new ParseFailedException(GetInvalidInputMessage(i + lineOffset));
+            }
+
+            if (!TestCaseConstraintChecker.IsXInRange(x) || !TestCaseConstraintChecker.IsYInRange(y))
+            {
+                var message = $"{GetInvalidInputMessage(i + lineOffset)} {TestCaseConstraintChecker.MinCoordinate}≦x, y≦{TestCaseConstraintChecker.MaxCoordinate}を満たす必要があります。";
+                throw new ParseFailedException(message);
             }
 
             points[i] = new Point(x, y);
@@ -65,5 +70,5 @@ public static class TestCaseParser
 
     private const string NotEnoughLineMessage = "入力の長さが不足しています。";
 
-    private static string GetInvalidInputMessage(int lineNumber) => $"{lineNumber + 1}行目の入力が不正です。";
+    private static string GetInvalidInputMessage(int lineNumber) => $"入力の{lineNumber + 1}行目が不正です。";
 }

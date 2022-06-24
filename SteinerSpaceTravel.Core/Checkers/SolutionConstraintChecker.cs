@@ -2,9 +2,12 @@
 
 internal static class SolutionConstraintChecker
 {
-    private const int MinCoordinate = 0;
-    private const int MaxCoordinate = 1000;
+    public const int MinCoordinate = 0;
+    public const int MaxCoordinate = 1000;
     private static readonly Visit StartPoint = new(AstronomicalType.Planet, 0);
+    public const string NotVisitedAllMessage = "未訪問の星が存在します。";
+    public const string InvalidStartMessage = "経路は星1から開始しなければなりません。";
+    public const string InvalidGoalMessage = "経路は星1で終了しなければなりません。";
 
     public static bool IsXInRange(int x) => x is >= MinCoordinate and <= MaxCoordinate;
 
@@ -22,7 +25,7 @@ internal static class SolutionConstraintChecker
         return (uint)index < (uint)length;
     }
 
-    public static bool HasVisitedAll(TestCase testCase, IEnumerable<Visit> visits)
+    public static bool HasVisitedAll(TestCase testCase, ReadOnlySpan<Visit> visits)
     {
         var visited = new bool[testCase.N];
 

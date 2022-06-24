@@ -25,10 +25,15 @@ public static class SolutionParser
         {
             var line = input[i].SplitAndTrim();
 
-            if (line.Length != 2 || !int.TryParse(line[0], out var x) || !int.TryParse(line[1], out var y) ||
-                !SolutionConstraintChecker.IsXInRange(x) || !SolutionConstraintChecker.IsYInRange(y))
+            if (line.Length != 2 || !int.TryParse(line[0], out var x) || !int.TryParse(line[1], out var y))
             {
                 throw new ParseFailedException(GetInvalidInputMessage(i));
+            }
+
+            if (!SolutionConstraintChecker.IsXInRange(x) || !SolutionConstraintChecker.IsYInRange(y))
+            {
+                var message = $"{GetInvalidInputMessage(i)} {TestCaseConstraintChecker.MinCoordinate}≦x, y≦{TestCaseConstraintChecker.MaxCoordinate}を満たす必要があります。";
+                throw new ParseFailedException(message);
             }
 
             points[i] = new Point(x, y);
@@ -93,29 +98,12 @@ public static class SolutionParser
 
     private static void CheckValidVisits(TestCase testCase, Visit[] visits)
     {
-        if (!SolutionConstraintChecker.IsValidStart(visits))
-        {
-            throw new ParseFailedException(InvalidStartMessage);
-        }
-
-        if (!SolutionConstraintChecker.IsValidGoal(visits))
-        {
-            throw new ParseFailedException(InvalidGoalMessage);
-        }
-
-        if (!SolutionConstraintChecker.HasVisitedAll(testCase, visits))
-        {
-            throw new ParseFailedException(NotVisitedAllMessage);
-        }
     }
 
     private const string NotEnoughLineMessage = "出力の長さが不足しています。";
     private const string InvalidVisitLengthMessage = "経路の長さは正の整数でなければなりません。";
-    private const string NotVisitedAllMessage = "未訪問の星が存在します。";
-    private const string InvalidStartMessage = "経路は星1から開始しなければなりません。";
-    private const string InvalidGoalMessage = "経路は星1で終了しなければなりません。";
 
-    private static string GetInvalidInputMessage(int lineNumber) => $"{lineNumber + 1}行目の出力が不正です。";
+    private static string GetInvalidInputMessage(int lineNumber) => $"出力の{lineNumber + 1}行目が不正です。";
 
     private static AstronomicalType ParseAstronomicalType(string type, int lineNumber) => type switch
     {

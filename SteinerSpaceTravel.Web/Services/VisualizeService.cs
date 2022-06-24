@@ -111,6 +111,13 @@ public class VisualizeService
             return;
         }
 
-        Score = Judge.CalculateScore(_solution);
+        var (score, message) = Judge.CalculateScore(_solution);
+
+        Score = score;
+
+        if (message is not null)
+        {
+            ErrorMessage = $"({message})";
+        }
     }
 }
