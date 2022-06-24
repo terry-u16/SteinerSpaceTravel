@@ -7,19 +7,22 @@
 
 <h1>Visualizer</h1>
 
-<h2>Seed</h2>
-<input type="number" min="@ulong.MinValue" max="@ulong.MaxValue" @bind-value="@VisualizeService.Seed" />
+<div class="seed-section">
+    <div class="input-label">Seed</div>
+    <input type="number" min="@ulong.MinValue" max="@ulong.MaxValue" @bind-value="@VisualizeService.Seed" />
+</div>
 
-<div class="testcase">
+<div class="testcase-section">
     <div>
-        <h2>Input</h2>
+        <div class="input-label">Input</div>
         <textarea rows="4" cols="30" @bind="@VisualizeService.Input"></textarea>
     </div>
     <div>
-        <h2>Output</h2>
+        <div class="input-label">Output</div>
         <textarea rows="4" cols="30" @bind="@VisualizeService.Output"></textarea>
     </div>
 </div>
+
 <hr />
 
 <p>

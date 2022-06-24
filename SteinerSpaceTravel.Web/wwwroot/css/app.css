@@ -68,7 +68,17 @@ a, .btn-link {
     width: 600px;
 }
 
-.testcase {
+.seed-section {
+    margin: 10px 0;
+}
+
+.testcase-section {
+    margin: 10px 0;
     display: flex;
     gap: 20px;
+}
+
+.input-label {
+    margin: 5px 0;
+    font-size: 20px;
 }
