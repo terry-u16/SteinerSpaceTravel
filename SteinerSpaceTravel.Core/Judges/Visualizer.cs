@@ -22,7 +22,8 @@ public static class Visualizer
     private static readonly SKColor DodgerBlue = new(0x1E, 0x90, 0xFF);
     private static readonly SKColor Gold = new(0xFF, 0xD7, 0x00);
     private static readonly SKColor LightSlateGrey = new(0x77, 0x88, 0x99);
-    
+
+    public static void Visualize(SKCanvas canvas, SKImageInfo imageInfo) => canvas.Clear(White);
 
     public static void Visualize(TestCase testCase, SKCanvas canvas, SKImageInfo imageInfo)
     {
@@ -30,7 +31,6 @@ public static class Visualizer
         canvas.Clear(White);
         DrawPlanets(canvas, testCase, canvasScale);
     }
-
 
     public static void Visualize(Solution solution, SKCanvas canvas, SKImageInfo imageInfo)
     {

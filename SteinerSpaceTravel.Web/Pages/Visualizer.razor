@@ -7,10 +7,8 @@
 
 <h1>Visualizer</h1>
 
-<p>
-    <h2>Seed</h2>
-    <input type="number" min="@ulong.MinValue" max="@ulong.MaxValue" @bind-value="@VisualizeService.Seed" />
-</p>
+<h2>Seed</h2>
+<input type="number" min="@ulong.MinValue" max="@ulong.MaxValue" @bind-value="@VisualizeService.Seed" />
 
 <div class="testcase">
     <div>
@@ -23,6 +21,10 @@
     </div>
 </div>
 <hr />
+
+<p>
+    Score = @VisualizeService.Score <span class="validation-message">@VisualizeService.ErrorMessage</span>
+</p>
 
 <SKCanvasView class="visualizer" width="600" height="600" @ref="_canvasView" OnPaintSurface="PaintSurface">ビジュアライザ非対応のブラウザです。</SKCanvasView>
 
