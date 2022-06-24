@@ -1,20 +1,21 @@
 ﻿using SkiaSharp;
 using SteinerSpaceTravel.Core.Utilities;
+using System.Numerics;
 
 namespace SteinerSpaceTravel.Core.Judges;
 
 public static class Visualizer
 {
-    private const int CanvasSize = 1000 + 2 * CanvasOffset;
-    private const int CanvasOffset = 50;
+    private const int VirtualCanvasSize = 1000 + 2 * CanvasOffset;
+    private const int CanvasOffset = 20;
     private const int EarthRadius = 10;
     private const int CircleRadius = 7;
-    private const int RectangularSize = CircleRadius * 2;
+    private const int RectangularSize = 16;
     private const int RectangularSizeHalf = RectangularSize / 2;
     private const int PathWidth = 3;
     private const double MinLogEnergy = 3.0;
     private const double MaxLogEnergy = 6.0;
-    private static readonly SKPoint Offset = new(CanvasOffset, CanvasOffset);
+    private static readonly Vector2 Offset = new(CanvasOffset, CanvasOffset);
     private static readonly SKColor MinEnergyColor = new(0x20, 0x20, 0x20);
     private static readonly SKColor MaxEnergyColor = new(0xFF, 0x20, 0x20);
     private static readonly SKColor White = new(255, 255, 255);
@@ -23,28 +24,24 @@ public static class Visualizer
     private static readonly SKColor LightSlateGrey = new(0x77, 0x88, 0x99);
     
 
-    public static SKBitmap Visualize(TestCase testCase)
+    public static void Visualize(TestCase testCase, SKCanvas canvas, SKImageInfo imageInfo)
     {
-        var bitmap = new SKBitmap(CanvasSize, CanvasSize, SKColorType.Rgba8888, SKAlphaType.Opaque);
-        var canvas = new SKCanvas(bitmap);
+        var canvasScale = (float)Math.Min(imageInfo.Width, imageInfo.Height) / VirtualCanvasSize;
         canvas.Clear(White);
-        DrawPlanets(canvas, testCase);
-        return bitmap;
+        DrawPlanets(canvas, testCase, canvasScale);
     }
 
 
-    public static SKBitmap Visualize(Solution solution)
+    public static void Visualize(Solution solution, SKCanvas canvas, SKImageInfo imageInfo)
     {
-        var bitmap = new SKBitmap(CanvasSize, CanvasSize, SKColorType.Rgba8888, SKAlphaType.Opaque);
-        var canvas = new SKCanvas(bitmap);
+        var canvasScale = (float)Math.Min(imageInfo.Width, imageInfo.Height) / VirtualCanvasSize;
         canvas.Clear(White);
-        DrawPlanets(canvas, solution.TestCase);
-        DrawStations(canvas, solution);
-        DrawLines(canvas, solution);
-        return bitmap;
+        DrawPlanets(canvas, solution.TestCase, canvasScale);
+        DrawStations(canvas, solution, canvasScale);
+        DrawLines(canvas, solution, canvasScale);
     }
 
-    private static void DrawPlanets(SKCanvas canvas, TestCase testCase)
+    private static void DrawPlanets(SKCanvas canvas, TestCase testCase, float canvasScale)
     {
         var points = testCase.Points;
         using var paint = new SKPaint
@@ -54,16 +51,18 @@ public static class Visualizer
             IsAntialias = true
         };
 
-        canvas.DrawCircle(points[0].ToSkPoint() + Offset, EarthRadius, paint);
+        var p0 = AffineTransform(points[0], canvasScale);
+        canvas.DrawCircle(p0, EarthRadius * canvasScale, paint);
         paint.Color = Gold;
 
         foreach (var point in points[1..])
         {
-            canvas.DrawCircle(point.ToSkPoint() + Offset, CircleRadius, paint);
+            var p = AffineTransform(point, canvasScale);
+            canvas.DrawCircle(p, CircleRadius * canvasScale, paint);
         }
     }
 
-    private static void DrawStations(SKCanvas canvas, Solution solution)
+    private static void DrawStations(SKCanvas canvas, Solution solution, float canvasScale)
     {
         var stations = solution.Stations;
         using var paint = new SKPaint
@@ -75,26 +74,27 @@ public static class Visualizer
 
         foreach (var point in stations)
         {
-            var p = point.ToSkPoint() + Offset;
-            var x = p.X - RectangularSizeHalf;
-            var y = p.Y - RectangularSizeHalf;
-            canvas.DrawRect(x, y, RectangularSize, RectangularSize, paint);
+            var p = AffineTransform(point, canvasScale);
+            var x = p.X - RectangularSizeHalf * canvasScale;
+            var y = p.Y - RectangularSizeHalf * canvasScale;
+            var size = RectangularSize * canvasScale;
+            canvas.DrawRect(x, y, size, size, paint);
         }
     }
 
-    private static void DrawLines(SKCanvas canvas, Solution solution)
+    private static void DrawLines(SKCanvas canvas, Solution solution, float canvasScale)
     {
         using var paint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = PathWidth,
+            StrokeWidth = PathWidth * canvasScale,
             IsAntialias = true
         };
 
         for (int i = 0; i + 1 < solution.Visits.Length; i++)
         {
-            var prevPoint = solution.GetPointAt(i).ToSkPoint() + Offset;
-            var nextPoint = solution.GetPointAt(i + 1).ToSkPoint() + Offset;
+            var prevPoint = AffineTransform(solution.GetPointAt(i), canvasScale);
+            var nextPoint = AffineTransform(solution.GetPointAt(i + 1), canvasScale);
             var energy = Judge.CalculateEnergy(solution, i, i + 1);
             paint.Color = InterpolateColor(energy);
             canvas.DrawLine(prevPoint, nextPoint, paint);
@@ -111,4 +111,6 @@ public static class Visualizer
         x = Math.Max(Math.Min(x, 1.0), 0.0);
         return MinEnergyColor.Blend(MaxEnergyColor, x);
     }
+
+    private static SKPoint AffineTransform(Point point, float scale) => ((point.ToVector2() + Offset) * scale).ToSkPoint();
 }

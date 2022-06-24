@@ -2,11 +2,14 @@
 using SteinerSpaceTravel.Core.Judges;
 using SteinerSpaceTravel.Core.Parsers;
 using System.Text;
+using SkiaSharp;
 
 namespace SteinerSpaceTravel.Console;
 
 public class Commands : ConsoleAppBase
 {
+    private const int CanvasSize = 1100;
+
     [Command("gen", "Generate testcases.")]
     public async Task GenerateTestCases([Option("s", "seedファイルのパス")] string seeds)
     {
@@ -79,8 +82,12 @@ public class Commands : ConsoleAppBase
 
             if (visualize is not null)
             {
-                using var image = Visualizer.Visualize(solution);
-                var data = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+                var imageInfo = new SKImageInfo(CanvasSize, CanvasSize, SKColorType.Rgba8888, SKAlphaType.Opaque);
+                using var bitmap = new SKBitmap(imageInfo);
+                using var canvas = new SKCanvas(bitmap);
+
+                Visualizer.Visualize(solution, canvas, imageInfo);
+                var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
                 await File.WriteAllBytesAsync(visualize, data.ToArray());
                 System.Console.WriteLine($@"ビジュアライズ結果を""{visualize}""に保存しました。");
             }

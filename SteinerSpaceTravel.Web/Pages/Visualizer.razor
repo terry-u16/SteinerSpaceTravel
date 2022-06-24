@@ -1,0 +1,39 @@
+﻿@page "/"
+@using SteinerSpaceTravel.Web.Services
+@using SkiaSharp.Views.Blazor
+@inject VisualizeService VisualizeService
+
+<PageTitle>Visualizer</PageTitle>
+
+<h1>Visualizer</h1>
+
+<p>
+    <h2>Seed</h2>
+    <input type="number" min="@ulong.MinValue" max="@ulong.MaxValue" @bind-value="@VisualizeService.Seed" />
+</p>
+
+<div class="testcase">
+    <div>
+        <h2>Input</h2>
+        <textarea rows="4" cols="30" @bind="@VisualizeService.Input"></textarea>
+    </div>
+    <div>
+        <h2>Output</h2>
+        <textarea rows="4" cols="30" @bind="@VisualizeService.Output"></textarea>
+    </div>
+</div>
+<hr />
+
+<SKCanvasView class="visualizer" width="600" height="600" @ref="_canvasView" OnPaintSurface="PaintSurface">ビジュアライザ非対応のブラウザです。</SKCanvasView>
+
+@code {
+    private SKCanvasView? _canvasView;
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        _canvasView?.Invalidate();
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void PaintSurface(SKPaintSurfaceEventArgs e) => VisualizeService.Visualize(e.Surface.Canvas, e.Info);
+}

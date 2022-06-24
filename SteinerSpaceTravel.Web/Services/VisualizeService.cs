@@ -1,4 +1,5 @@
-﻿using SteinerSpaceTravel.Core.Generators;
+﻿using SkiaSharp;
+using SteinerSpaceTravel.Core.Generators;
 using SteinerSpaceTravel.Core.Judges;
 using SteinerSpaceTravel.Core.Parsers;
 
@@ -31,10 +32,9 @@ public class VisualizeService
         Seed = 0;
     }
 
-    public byte[] Visualize()
+    public void Visualize(SKCanvas canvas, SKImageInfo imageInfo)
     {
         var input = TestCaseParser.Parse(Input.Split(NewLines, StringSplitOptions.TrimEntries));
-        var image = Visualizer.Visualize(input);
-        return image.Bytes;
+        Visualizer.Visualize(input, canvas, imageInfo);
     }
 }

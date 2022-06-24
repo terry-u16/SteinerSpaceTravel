@@ -1,4 +1,5 @@
 ﻿using SkiaSharp;
+using System.Numerics;
 
 namespace SteinerSpaceTravel.Core.Utilities;
 
@@ -14,4 +15,8 @@ internal static class VisualizerExtension
         var b = BlendOne(c1.Blue, c2.Blue, ratio);
         return new SKColor(r, g, b, a);
     }
+
+    public static Vector2 ToVector2(this Point point) => new(point.X, point.Y);
+    public static SKPoint ToSkPoint(this Point point) => new(point.X, point.Y);
+    public static SKPoint ToSkPoint(this Vector2 vector) => new(vector.X, vector.Y);
 }
