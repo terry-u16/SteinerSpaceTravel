@@ -55,7 +55,7 @@ public class Commands : ConsoleAppBase
         }
         catch (IOException ex)
         {
-            WriteErrorMessage(ex);
+            WriteErrorMessage(ex.Message);
         }
     }
 
@@ -76,7 +76,12 @@ public class Commands : ConsoleAppBase
 
             var testCase = TestCaseParser.Parse(testCaseText);
             var solution = SolutionParser.Parse(testCase, solutionText);
-            var score = Judge.CalculateScore(solution);
+            var (score, message) = Judge.CalculateScore(solution);
+
+            if (message is not null)
+            {
+                WriteErrorMessage(message);
+            }
 
             System.Console.WriteLine($"Score: {score}");
 
@@ -94,11 +99,11 @@ public class Commands : ConsoleAppBase
         }
         catch (IOException ex)
         {
-            WriteErrorMessage(ex);
+            WriteErrorMessage(ex.Message);
         }
         catch (ParseFailedException ex)
         {
-            WriteErrorMessage(ex);
+            WriteErrorMessage(ex.Message);
         }
     }
 
@@ -115,10 +120,10 @@ public class Commands : ConsoleAppBase
         }
     }
 
-    private static void WriteErrorMessage(Exception ex)
+    private static void WriteErrorMessage(string message)
     {
         System.Console.ForegroundColor = ConsoleColor.Red;
-        System.Console.WriteLine(ex.Message);
+        System.Console.WriteLine(message);
         System.Console.ResetColor();
     }
 }
