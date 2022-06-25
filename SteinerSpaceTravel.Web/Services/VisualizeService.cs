@@ -142,18 +142,7 @@ public class VisualizeService
         using var bitmap = new SKBitmap(imageInfo);
         using var canvas = new SKCanvas(bitmap);
 
-        if (_testCase is null)
-        {
-            Visualizer.Visualize(canvas, imageInfo);
-        }
-        else if (_solution is null)
-        {
-            Visualizer.Visualize(_testCase, canvas, imageInfo);
-        }
-        else
-        {
-            Visualizer.Visualize(_solution, canvas, imageInfo);
-        }
+        Visualize(canvas, imageInfo);
 
         var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
         await _blazorDownloadFileService.DownloadFile(fileName, data.ToArray(), "image/png");
