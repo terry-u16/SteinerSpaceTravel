@@ -1,9 +1,7 @@
 ﻿@page "/"
 @using SteinerSpaceTravel.Web.Services
 @using SkiaSharp.Views.Blazor
-@using Cysharp.Web
 @inject VisualizeService VisualizeService
-@inject IJSRuntime Js
 
 <PageTitle>Visualizer</PageTitle>
 
@@ -25,7 +23,10 @@
     </div>
 </div>
 
-<button class="btn btn-primary" disabled="@(VisualizeService.Score == 0)" @onclick="@VisualizeService.Tweet">Tweet</button>
+<div class="flex-button">
+    <button class="btn btn-primary" disabled="@(!VisualizeService.CanDownloadImage)" @onclick="@VisualizeService.DownloadImageAsync">Download image</button>
+    <button class="btn btn-primary" disabled="@(!VisualizeService.CanTweet)" @onclick="@VisualizeService.TweetAsync">Tweet</button>
+</div>
 
 <hr />
 

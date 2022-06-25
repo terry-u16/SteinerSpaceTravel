@@ -9,7 +9,7 @@ public class GenerateService
 {
     public ulong SeedFrom { get; set; }
     public ulong SeedTo { get; set; }
-    public bool CanGenerate => SeedFrom <= SeedTo;
+    public bool CanGenerate => SeedFrom <= SeedTo && !IsGenerating;
     public bool IsGenerating { get; private set; }
     public string Message { get; private set; }
 
@@ -48,7 +48,7 @@ public class GenerateService
         }
     }
 
-    public void CancelDownloading() => _cancellationTokenSource?.Cancel();
+    public void CancelDownload() => _cancellationTokenSource?.Cancel();
 
     private async Task<MemoryStream> CreateZipStreamAsync(CancellationToken cancellationToken = default)
     {

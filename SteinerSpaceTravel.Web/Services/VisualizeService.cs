@@ -1,4 +1,5 @@
-﻿using Cysharp.Web;
+﻿using BlazorDownloadFile;
+using Cysharp.Web;
 using Microsoft.JSInterop;
 using SkiaSharp;
 using SteinerSpaceTravel.Core;
@@ -49,6 +50,10 @@ public class VisualizeService
     public long Score { get; private set; }
 
     public string ErrorMessage { get; private set; }
+    
+    public bool CanDownloadImage => _testCase != null;
+
+    public bool CanTweet => Score != 0;
 
     private TestCase? _testCase;
 
@@ -56,9 +61,11 @@ public class VisualizeService
 
     private readonly IJSRuntime _jsRuntime;
 
+    private readonly IBlazorDownloadFileService _blazorDownloadFileService;
+
     private static readonly string[] NewLines = { "\r\n", "\r", "\n" };
 
-    public VisualizeService(IJSRuntime jsRuntime)
+    public VisualizeService(IJSRuntime jsRuntime, IBlazorDownloadFileService blazorDownloadFileService)
     {
         _input = string.Empty;
         _output = string.Empty;
@@ -66,6 +73,7 @@ public class VisualizeService
         Seed = 0;
         Score = 0;
         _jsRuntime = jsRuntime;
+        _blazorDownloadFileService = blazorDownloadFileService;
         CalculateScore();
     }
 
@@ -126,7 +134,32 @@ public class VisualizeService
         }
     }
 
-    public async Task Tweet()
+    public async Task DownloadImageAsync()
+    {
+        const int canvasSize = 1100;
+        const string fileName = "vis.png";
+        var imageInfo = new SKImageInfo(canvasSize, canvasSize, SKColorType.Rgba8888, SKAlphaType.Opaque);
+        using var bitmap = new SKBitmap(imageInfo);
+        using var canvas = new SKCanvas(bitmap);
+
+        if (_testCase is null)
+        {
+            Visualizer.Visualize(canvas, imageInfo);
+        }
+        else if (_solution is null)
+        {
+            Visualizer.Visualize(_testCase, canvas, imageInfo);
+        }
+        else
+        {
+            Visualizer.Visualize(_solution, canvas, imageInfo);
+        }
+
+        var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+        await _blazorDownloadFileService.DownloadFile(fileName, data.ToArray(), "image/png");
+    }
+
+    public async Task TweetAsync()
     {
         // https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent
         const string webIntentUrl = "https://twitter.com/intent/tweet";
