@@ -1,7 +1,9 @@
 ﻿@page "/"
 @using SteinerSpaceTravel.Web.Services
 @using SkiaSharp.Views.Blazor
+@using Cysharp.Web
 @inject VisualizeService VisualizeService
+@inject IJSRuntime Js
 
 <PageTitle>Visualizer</PageTitle>
 
@@ -23,6 +25,8 @@
     </div>
 </div>
 
+<button class="btn btn-primary" disabled="@(VisualizeService.Score == 0)" @onclick="@Tweet">Tweet</button>
+
 <hr />
 
 <p>
@@ -41,4 +45,15 @@
     }
 
     private void PaintSurface(SKPaintSurfaceEventArgs e) => VisualizeService.Visualize(e.Surface.Canvas, e.Info);
+
+    private async Task Tweet()
+    {
+        // https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent
+        const string webIntentUrl = "https://twitter.com/intent/tweet";
+        const string url = "https://google.com/";
+        const string hashtags = "test,visualizer";
+        var text = $"XXXXXのseed={VisualizeService.Seed}で{VisualizeService.Score:#,##0}点を獲得しました！（ここに画像を貼ってね）";
+        var tweetUrl = WebSerializer.ToQueryString(webIntentUrl, new { text, url, hashtags });        
+        await Js.InvokeVoidAsync("open", tweetUrl, "_blank", "noopener");
+    }
 }
