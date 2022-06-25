@@ -88,3 +88,19 @@ a, .btn-link {
     margin: 5px 0;
     font-size: 20px;
 }
+
+.explain-section {
+    margin: 20px 0;
+}
+
+.earth {
+    color: #1e90ff
+}
+
+.planet {
+    color: #ffd700
+}
+
+.station {
+    color: #778899
+}

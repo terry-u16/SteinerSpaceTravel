@@ -15,7 +15,7 @@
 
 <div class="flex-button">
     <button class="btn btn-primary" disabled="@(!GenerateService.CanGenerate)" @onclick="@GenerateService.DownloadSeedsAsync">Download</button>
-    <button class="btn btn-primary" disabled="@(!GenerateService.IsGenerating)" @onclick="@GenerateService.CancelDownload">Cancel</button>
+    <button class="btn btn-outline-primary" disabled="@(!GenerateService.IsGenerating)" @onclick="@GenerateService.CancelDownload">Cancel</button>
 </div>
 
 <p>@GenerateService.Message</p>
