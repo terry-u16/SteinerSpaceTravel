@@ -11,11 +11,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ConsoleAppFramework" Version="4.1.0" />
+    <PackageReference Include="ConsoleAppFramework" Version="4.2.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SteinerSpaceTravel.Core\SteinerSpaceTravel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ThirdPartyNotices.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
