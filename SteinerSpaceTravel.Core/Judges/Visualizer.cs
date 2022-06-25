@@ -112,5 +112,11 @@ public static class Visualizer
         return MinEnergyColor.Blend(MaxEnergyColor, x);
     }
 
-    private static SKPoint AffineTransform(Point point, float scale) => ((point.ToVector2() + Offset) * scale).ToSkPoint();
+    private static SKPoint AffineTransform(Point point, float scale)
+    {
+        // 左下を原点とするため変換が必要
+        var invP = point.ToVector2() + Offset;
+        var p = invP with { Y = VirtualCanvasSize - invP.Y };
+        return (p * scale).ToSkPoint();
+    }
 }
