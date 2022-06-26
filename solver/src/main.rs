@@ -1,9 +1,51 @@
-use itertools::Itertools;
-use proconio::*;
-use rand::prelude::*;
+use std::time::Instant;
+
+use crate::rand::Xoshiro256;
 
 const MAP_SIZE: i32 = 1000;
 const MULTIPLIER: i64 = 5;
+
+macro_rules! get {
+      ($t:ty) => {
+          {
+              let mut line: String = String::new();
+              std::io::stdin().read_line(&mut line).unwrap();
+              line.trim().parse::<$t>().unwrap()
+          }
+      };
+      ($($t:ty),*) => {
+          {
+              let mut line: String = String::new();
+              std::io::stdin().read_line(&mut line).unwrap();
+              let mut iter = line.split_whitespace();
+              (
+                  $(iter.next().unwrap().parse::<$t>().unwrap(),)*
+              )
+          }
+      };
+      ($t:ty; $n:expr) => {
+          (0..$n).map(|_|
+              get!($t)
+          ).collect::<Vec<_>>()
+      };
+      ($($t:ty),*; $n:expr) => {
+          (0..$n).map(|_|
+              get!($($t),*)
+          ).collect::<Vec<_>>()
+      };
+      ($t:ty ;;) => {
+          {
+              let mut line: String = String::new();
+              std::io::stdin().read_line(&mut line).unwrap();
+              line.split_whitespace()
+                  .map(|t| t.parse::<$t>().unwrap())
+                  .collect::<Vec<_>>()
+          }
+      };
+      ($t:ty ;; $n:expr) => {
+          (0..$n).map(|_| get!($t ;;)).collect::<Vec<_>>()
+      };
+}
 
 #[allow(unused_macros)]
 macro_rules! chmin {
@@ -68,6 +110,7 @@ struct Input {
     n: usize,
     m: usize,
     points: Vec<Point>,
+    since: Instant,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -118,7 +161,8 @@ impl State {
     fn calc_score_all(&self, input: &Input) -> i64 {
         let mut score = 0;
 
-        for (&prev, &next) in self.orders.iter().tuple_windows() {
+        for w in self.orders.windows(2) {
+            let (prev, next) = (w[0], w[1]);
             let mul0 = get_score_mul(prev, input.n);
             let mul1 = get_score_mul(next, input.n);
             let dist_sq = self.points[prev].dist_sq(&self.points[next]);
@@ -136,30 +180,33 @@ fn main() {
 
     let score = state.calc_score_all(&input);
     eprintln!("score: {}", score);
+
+    let elapsed = (Instant::now() - input.since).as_millis();
+    eprintln!("elapsed: {}ms", elapsed);
 }
 
 fn read_input() -> Input {
-    input! {
-        n: usize,
-        m: usize,
-    }
+    let (n, m) = get!(usize, usize);
+    let since = Instant::now();
 
     let mut points = vec![];
 
     for _ in 0..n {
-        input! {
-            x: i32,
-            y: i32
-        }
+        let (x, y) = get!(i32, i32);
         points.push(Point::new(x, y));
     }
 
-    Input { n, m, points }
+    Input {
+        n,
+        m,
+        points,
+        since,
+    }
 }
 
 fn solve(input: &Input) -> State {
     let solution = State::init(&input);
-    let solution = annealing(&input, solution, 1.0);
+    let solution = annealing(&input, solution, 0.98);
     solution
 }
 
@@ -174,7 +221,7 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
     let mut valid_iter = 0;
     let mut accepted_count = 0;
     let mut update_count = 0;
-    let mut rng = rand_pcg::Pcg64Mcg::new(42);
+    let mut rng = Xoshiro256::new(42);
 
     let duration_inv = 1.0 / duration;
     let since = std::time::Instant::now();
@@ -193,20 +240,21 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
         }
 
         // 変形
-        let mod_station = rng.gen_range(0..100) < 10;
+        let mod_station = rng.gen_usize(0, 100) < 10;
 
         if mod_station {
-            let station_id = input.n + rng.gen_range(0..input.m);
+            let station_id = input.n + rng.gen_usize(0, input.m);
             let mut temp_orders = solution.orders.clone();
             temp_orders.retain(|&v| v != station_id);
 
             let mut p = solution.points[station_id];
             const DELTA: i32 = 100;
-            p.x = rng.gen_range((p.x - DELTA).max(0)..=(p.x + DELTA).min(MAP_SIZE));
-            p.y = rng.gen_range((p.y - DELTA).max(0)..=(p.y + DELTA).min(MAP_SIZE));
+            p.x = rng.gen_i32((p.x - DELTA).max(0), (p.x + DELTA).min(MAP_SIZE) + 1);
+            p.y = rng.gen_i32((p.y - DELTA).max(0), (p.y + DELTA).min(MAP_SIZE) + 1);
             let mut new_orders = vec![];
 
-            for (&prev, &next) in temp_orders.iter().tuple_windows() {
+            for w in temp_orders.windows(2) {
+                let (prev, next) = (w[0], w[1]);
                 new_orders.push(prev);
                 let mul0 = get_score_mul(prev, input.n);
                 let mul1 = get_score_mul(next, input.n);
@@ -238,8 +286,8 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
                 }
             }
         } else {
-            let from = rng.gen_range(1..(solution.orders.len() - 1));
-            let to = rng.gen_range((from + 1)..solution.orders.len());
+            let from = rng.gen_usize(1, solution.orders.len() - 1);
+            let to = rng.gen_usize(from + 1, solution.orders.len());
 
             let i0 = solution.orders[from - 1];
             let i1 = solution.orders[from];
@@ -313,5 +361,70 @@ fn write_output(input: &Input, solution: &State) {
         } else {
             println!("2 {}", v + 1 - input.n);
         }
+    }
+}
+
+mod rand {
+    pub(crate) struct Xoshiro256 {
+        s0: u64,
+        s1: u64,
+        s2: u64,
+        s3: u64,
+    }
+
+    impl Xoshiro256 {
+        pub(crate) fn new(mut seed: u64) -> Self {
+            let s0 = split_mix_64(&mut seed);
+            let s1 = split_mix_64(&mut seed);
+            let s2 = split_mix_64(&mut seed);
+            let s3 = split_mix_64(&mut seed);
+            Self { s0, s1, s2, s3 }
+        }
+
+        fn next(&mut self) -> u64 {
+            let result = (self.s1 * 5).rotate_left(7) * 9;
+            let t = self.s1 << 17;
+
+            self.s2 ^= self.s0;
+            self.s3 ^= self.s1;
+            self.s1 ^= self.s2;
+            self.s0 ^= self.s3;
+            self.s2 ^= t;
+            self.s3 = self.s3.rotate_left(45);
+
+            result
+        }
+
+        pub(crate) fn gen_usize(&mut self, lower: usize, upper: usize) -> usize {
+            assert!(lower < upper);
+            let count = upper - lower;
+            (self.next() % count as u64) as usize + lower
+        }
+
+        pub(crate) fn gen_i32(&mut self, lower: i32, upper: i32) -> i32 {
+            assert!(lower < upper);
+            let count = upper - lower;
+            (self.next() % count as u64) as i32 + lower
+        }
+
+        pub(crate) fn gen_f64(&mut self) -> f64 {
+            const UPPER_MASK: u64 = 0x3ff0000000000000;
+            const LOWER_MASK: u64 = 0xfffffffffffff;
+            let result = UPPER_MASK | (self.next() & LOWER_MASK);
+            let result: f64 = unsafe { std::mem::transmute(result) };
+            result - 1.0
+        }
+
+        pub(crate) fn gen_bool(&mut self, prob: f64) -> bool {
+            self.gen_f64() < prob
+        }
+    }
+
+    fn split_mix_64(x: &mut u64) -> u64 {
+        *x += 0x9e3779b97f4a7c15;
+        let mut z = *x;
+        z = (z ^ z >> 30) * 0xbf58476d1ce4e5b9;
+        z = (z ^ z >> 27) * 0x94d049bb133111eb;
+        return z ^ z >> 31;
     }
 }
