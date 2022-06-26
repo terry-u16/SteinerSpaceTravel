@@ -40,11 +40,11 @@ public class TestCase
     public override string ToString()
     {
         var builder = new StringBuilder();
-        builder.Append($"{N} {M}");
+        builder.Append($"{N} {M}\n");
+
         foreach (var (x, y) in Points)
         {
-            builder.AppendLine();
-            builder.Append($"{x} {y}");
+            builder.Append($"{x} {y}\n");
         }
         return builder.ToString();
     }

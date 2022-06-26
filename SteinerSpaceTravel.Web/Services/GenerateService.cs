@@ -65,8 +65,8 @@ public class GenerateService
 
             var testCase = TestCaseGenerator.Generate(seed);
             await using var entry = zipArchive.CreateEntry(GetTestCaseFileName(seed)).Open();
-            await using var writer = new StreamWriter(entry, Encoding.UTF8);
-            await writer.WriteAsync(testCase.ToString() + Environment.NewLine);
+            await using var writer = new StreamWriter(entry, Encoding.Default);
+            await writer.WriteAsync(testCase.ToString());
         }
 
         return memoryStream;
