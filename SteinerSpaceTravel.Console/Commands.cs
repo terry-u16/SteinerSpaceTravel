@@ -48,6 +48,7 @@ public class Commands : ConsoleAppBase
                 var testCase = TestCaseGenerator.Generate(seed);
                 var outputPath = Path.Join(directoryPath, $"{seed:0000}.txt");
                 await File.WriteAllTextAsync(outputPath, testCase.ToString(), Encoding.Default);
+                System.Console.WriteLine($"seed = {seed} のケースを生成しました。");
                 outputCount++;
             }
 
