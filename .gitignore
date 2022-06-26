@@ -9,3 +9,6 @@
 /SteinerSpaceTravel.Core/obj
 /SteinerSpaceTravel.Web/bin
 /SteinerSpaceTravel.Web/obj
+
+*.suo
+*.user
