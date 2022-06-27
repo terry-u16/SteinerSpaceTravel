@@ -33,7 +33,7 @@ sudo apt-get update; \
 
 `input` ディレクトリに、seed 0～99 に対する入力ファイルが予め用意されています。
 
-より多くの入力ファイルが欲しい場合は、 `seeds.txt` にseed値（64bit符号なし整数）を入力し、以下のコマンドを実行します。
+より多くの入力ファイルが欲しい場合は、 `seeds.txt` にseed値（64bit符号なし整数）を入力し、以下のコマンドを実行します。生成された入力ファイルは `input` ディレクトリ以下に出力されます。
 
 ```bash
 dotnet tester.dll gen -s seeds.txt
@@ -47,7 +47,7 @@ dotnet tester.dll gen -s seeds.txt
 dotnet tester.dll judge -i in.txt -o out.txt
 ```
 
-ビジュアライズを行いたい場合は、出力先の画像ファイル名を `vis.png` として、以下のコマンドを実行します。
+ビジュアライズを行いたい場合は、出力先の画像ファイル名を `vis.png` として、以下のコマンドを実行します。画像はPNGファイルとして書き出されます。
 
 ```bash
 dotnet tester.dll judge -i in.txt -o out.txt -v vis.png
@@ -55,16 +55,16 @@ dotnet tester.dll judge -i in.txt -o out.txt -v vis.png
 
 ## 複数ケース並列実行・集計
 
-複数ケースの実行を行いたい場合は、入力ファイルのあるディレクトリを `in` 、解答プログラムの実行コマンドを `cmd` 、同時並列実行数を `parallel` として、以下のコマンドを実行します。このコマンドにより、 `in` ディレクトリ内の全ての `.txt` ファイルに対して解答プログラムが実行され、そのスコアが集計されます。
+複数ケースの実行を行いたい場合は、入力ファイルのあるディレクトリを `input` 、解答プログラムの実行コマンドを `cmd` 、同時並列実行数を `parallel` として、以下のコマンドを実行します。このコマンドにより、 `input` ディレクトリ内の全ての `.txt` ファイルに対して解答プログラムが実行され、そのスコアが集計されます。
 
 ```bash
-dotnet tester.dll judge-all -i in -c "cmd" -p parallel
+dotnet tester.dll judge-all -i input -c "cmd" -p parallel
 ```
 
-例えば、 `inputs` ディレクトリ内の全てのテストケースを対象として `answer.py` というPythonプログラムを4並列で実行したい場合、以下のコマンドを実行します。
+例えば、 `input` ディレクトリ内の全てのテストケースを対象として `answer.py` というPythonプログラムを4並列で実行したい場合、以下のコマンドを実行します。
 
 ```bash
-dotnet tester.dll judge-all -i inputs -c "python answer.py" -p 4
+dotnet tester.dll judge-all -i input -c "python answer.py" -p 4
 ```
 
 ダブルクォーテーション (`""`) を忘れると動作しない場合がありますのでご注意ください。
