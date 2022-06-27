@@ -95,4 +95,12 @@ $t_V\ r_V$
 ## ツール（入力ジェネレータ・ビジュアライザ）
 
 - Web版
-- ローカル版: 使用するには[.NET 6 Runtime](https://dotnet.microsoft.com/ja-jp/download)が必要です。同梱の`README.md`を参照ください。
+  - 以下の機能があります。
+    - テストケース生成機能
+    - 得点計算・ビジュアライズ機能
+- ローカル版
+  - 以下の機能があります。
+    - テストケース生成機能
+    - 得点計算・ビジュアライズ機能
+    - 複数ケース並列実行・集計機能
+  - 使用するには[.NET 6 Runtime](https://dotnet.microsoft.com/ja-jp/download)が必要です。同梱の`README.md`を参照ください。
