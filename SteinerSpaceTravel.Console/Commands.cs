@@ -17,7 +17,7 @@ public class Commands : ConsoleAppBase
     [Command("gen", "Generate testcases.")]
     public async Task GenerateTestCases([Option("s", "seedファイルのパス")] string seeds)
     {
-        const string directoryPath = "in";
+        const string directoryPath = "input";
 
         try
         {

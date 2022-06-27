@@ -95,12 +95,12 @@ $t_V\ r_V$
 ## ツール（入力ジェネレータ・ビジュアライザ）
 
 - Web版
-  - 以下の機能があります。
+  - 以下の機能を持つ。
     - テストケース生成機能
     - 得点計算・ビジュアライズ機能
 - ローカル版
-  - 以下の機能があります。
+  - 以下の機能を持つ。
     - テストケース生成機能
     - 得点計算・ビジュアライズ機能
     - 複数ケース並列実行・集計機能
-  - 使用するには[.NET 6 Runtime](https://dotnet.microsoft.com/ja-jp/download)が必要です。同梱の`README.md`を参照ください。
+  - 使用するには[.NET Runtime 6](https://dotnet.microsoft.com/ja-jp/download/dotnet/6.0)が必要である。同梱の`README.md`を参照のこと。
