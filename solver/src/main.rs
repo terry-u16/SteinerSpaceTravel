@@ -265,12 +265,9 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
     let since = std::time::Instant::now();
     let mut time = 0.0;
 
-    let temp0 = 3e5;
+    let temp0 = 1e5;
     let temp1 = 1e3;
     let mut inv_temp = 1.0 / temp0;
-
-    const MAX_DIFF: f64 = 400.0;
-    const MIN_DIFF: f64 = 10.0;
 
     while time < 1.0 {
         all_iter += 1;
@@ -281,16 +278,65 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
         }
 
         // 変形
-        let mod_station = rng.gen_usize(0, 100) < 10;
+        let neigh_type = rng.gen_usize(0, 10);
 
-        if mod_station {
+        if neigh_type < 2 {
+            // 近傍1: stationを適当な位置に挿入する
+            let station_id = input.n + rng.gen_usize(0, input.m);
+            let index = rng.gen_usize(1, solution.orders.len());
+            let prev = solution.orders[index - 1];
+            let next = solution.orders[index];
+
+            let old_score = solution.calc_score(input, prev, next);
+            let new_score = solution.calc_score(input, prev, station_id)
+                + solution.calc_score(input, station_id, next);
+            let score_diff = new_score - old_score;
+
+            if score_diff <= 0 || rng.gen_bool(f64::exp(-score_diff as f64 * inv_temp)) {
+                // 解の更新
+                current_score += score_diff;
+                accepted_count += 1;
+                solution.orders.insert(index, station_id);
+            }
+        } else if neigh_type < 4 {
+            // 近傍2: 適当な位置のstationを削除する
+            let mut index = 0;
+            let mut trial = 0;
+            while solution.orders[index] < input.n && trial < 10 {
+                index = rng.gen_usize(0, solution.orders.len());
+                trial += 1;
+            }
+
+            if solution.orders[index] < input.n {
+                continue;
+            }
+
+            let station_id = solution.orders[index];
+            let prev = solution.orders[index - 1];
+            let next = solution.orders[index + 1];
+
+            let old_score = solution.calc_score(input, prev, station_id)
+                + solution.calc_score(input, station_id, next);
+            let new_score = solution.calc_score(input, prev, next);
+            let score_diff = new_score - old_score;
+
+            if score_diff <= 0 || rng.gen_bool(f64::exp(-score_diff as f64 * inv_temp)) {
+                // 解の更新
+                current_score += score_diff;
+                accepted_count += 1;
+                solution.orders.remove(index);
+            }
+        } else if neigh_type < 5 {
+            // 近傍3: あるstationを一旦削除し、ランダムにずらした上で、各辺でstationを使う/使わないを貪欲に決め直す
             let station_id = input.n + rng.gen_usize(0, input.m);
             let mut temp_orders = solution.orders.clone();
             temp_orders.retain(|&v| v != station_id);
 
             let old_p = solution.points[station_id];
             let mut p = old_p;
-            let delta = (MAX_DIFF * (1.0 - time) + MIN_DIFF * time) as i32;
+            const MAX_DELTA: f64 = 400.0;
+            const MIN_DELTA: f64 = 10.0;
+            let delta = (MAX_DELTA * (1.0 - time) + MIN_DELTA * time) as i32;
             p.x = rng.gen_i32((p.x - delta).max(0), (p.x + delta).min(MAP_SIZE) + 1);
             p.y = rng.gen_i32((p.y - delta).max(0), (p.y + delta).min(MAP_SIZE) + 1);
             solution.points[station_id] = p;
@@ -321,16 +367,12 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
                 current_score = new_score;
                 accepted_count += 1;
                 solution.orders = new_orders;
-
-                if chmin!(best_score, current_score) {
-                    best_solution = solution.clone();
-                    update_count += 1;
-                }
             } else {
                 // ロールバック
                 solution.points[station_id] = old_p;
             }
         } else {
+            // 近傍4: 2-opt
             let from = rng.gen_usize(1, solution.orders.len() - 1);
             let to = rng.gen_usize(from + 1, solution.orders.len());
 
@@ -353,12 +395,12 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
                 current_score = new_score;
                 accepted_count += 1;
                 solution.orders[from..to].reverse();
-
-                if chmin!(best_score, current_score) {
-                    best_solution = solution.clone();
-                    update_count += 1;
-                }
             }
+        }
+
+        if chmin!(best_score, current_score) {
+            best_solution = solution.clone();
+            update_count += 1;
         }
 
         valid_iter += 1;
