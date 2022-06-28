@@ -170,6 +170,7 @@ impl State {
         score
     }
 
+    #[inline]
     fn calc_score(&self, input: &Input, prev: usize, next: usize) -> i64 {
         if prev < input.n && next < input.n {
             input.distances[prev][next]
@@ -188,7 +189,11 @@ fn main() {
     write_output(&input, &state);
 
     let score = state.calc_score_all(&input);
-    eprintln!("score: {}", score);
+    eprintln!("energy: {}", score);
+    eprintln!(
+        "score: {}",
+        (1e9 / (1e3 + (score as f64).sqrt())).round() as i64
+    );
 
     let elapsed = (Instant::now() - input.since).as_millis();
     eprintln!("elapsed: {}ms", elapsed);
@@ -280,11 +285,14 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
             let mut temp_orders = solution.orders.clone();
             temp_orders.retain(|&v| v != station_id);
 
-            let mut p = solution.points[station_id];
+            let old_p = solution.points[station_id];
+            let mut p = old_p;
             const DELTA: i32 = 100;
             p.x = rng.gen_i32((p.x - DELTA).max(0), (p.x + DELTA).min(MAP_SIZE) + 1);
             p.y = rng.gen_i32((p.y - DELTA).max(0), (p.y + DELTA).min(MAP_SIZE) + 1);
-            let mut new_orders = vec![];
+            solution.points[station_id] = p;
+            let mut new_orders = Vec::with_capacity(solution.orders.len());
+            let mut new_score = 0;
 
             for w in temp_orders.windows(2) {
                 let (prev, next) = (w[0], w[1]);
@@ -294,27 +302,30 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
                     + solution.calc_score(input, station_id, next);
 
                 if new_dist < old_dist {
+                    new_score += new_dist;
                     new_orders.push(station_id);
+                } else {
+                    new_score += old_dist;
                 }
             }
 
             new_orders.push(0);
 
-            let mut new_solution = State::new(solution.points.clone(), new_orders);
-            new_solution.points[station_id] = p;
-            let new_score = new_solution.calc_score_all(input);
             let score_diff = new_score - current_score;
 
             if score_diff <= 0 || rng.gen_bool(f64::exp(-score_diff as f64 * inv_temp)) {
                 // 解の更新
                 current_score = new_score;
                 accepted_count += 1;
-                solution = new_solution;
+                solution.orders = new_orders;
 
                 if chmin!(best_score, current_score) {
                     best_solution = solution.clone();
                     update_count += 1;
                 }
+            } else {
+                // ロールバック
+                solution.points[station_id] = old_p;
             }
         } else {
             let from = rng.gen_usize(1, solution.orders.len() - 1);
@@ -362,6 +373,7 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
     best_solution
 }
 
+#[inline]
 fn get_score_mul(v: usize, threshold: usize) -> i64 {
     if v < threshold {
         MULTIPLIER
@@ -402,8 +414,14 @@ fn dijkstra(input: &Input, solution: &State, start: usize, goal: usize) -> Vec<u
             break;
         }
 
+        let mul0 = get_score_mul(current, input.n);
+        let p0 = solution.points[current];
+
         for next in 0..(input.n + input.m) {
-            let d = solution.calc_score(input, current, next);
+            let mul1 = get_score_mul(next, input.n);
+            let p1 = solution.points[next];
+
+            let d = p0.dist_sq(&p1) * mul0 * mul1;
             if chmin!(distances[next], dist + d) {
                 queue.push(Reverse((dist + d, next)));
                 from[next] = current;
