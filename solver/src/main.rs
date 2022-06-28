@@ -265,9 +265,12 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
     let since = std::time::Instant::now();
     let mut time = 0.0;
 
-    let temp0 = 1e5;
-    let temp1 = 1e2;
+    let temp0 = 3e5;
+    let temp1 = 1e3;
     let mut inv_temp = 1.0 / temp0;
+
+    const MAX_DIFF: f64 = 400.0;
+    const MIN_DIFF: f64 = 10.0;
 
     while time < 1.0 {
         all_iter += 1;
@@ -287,9 +290,9 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
 
             let old_p = solution.points[station_id];
             let mut p = old_p;
-            const DELTA: i32 = 100;
-            p.x = rng.gen_i32((p.x - DELTA).max(0), (p.x + DELTA).min(MAP_SIZE) + 1);
-            p.y = rng.gen_i32((p.y - DELTA).max(0), (p.y + DELTA).min(MAP_SIZE) + 1);
+            let delta = (MAX_DIFF * (1.0 - time) + MIN_DIFF * time) as i32;
+            p.x = rng.gen_i32((p.x - delta).max(0), (p.x + delta).min(MAP_SIZE) + 1);
+            p.y = rng.gen_i32((p.y - delta).max(0), (p.y + delta).min(MAP_SIZE) + 1);
             solution.points[station_id] = p;
             let mut new_orders = Vec::with_capacity(solution.orders.len());
             let mut new_score = 0;
