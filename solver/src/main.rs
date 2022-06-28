@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{cmp::Reverse, collections::BinaryHeap, time::Instant};
 
 use crate::rand::Xoshiro256;
 
@@ -110,6 +110,7 @@ struct Input {
     n: usize,
     m: usize,
     points: Vec<Point>,
+    distances: Vec<Vec<i64>>,
     since: Instant,
 }
 
@@ -163,13 +164,21 @@ impl State {
 
         for w in self.orders.windows(2) {
             let (prev, next) = (w[0], w[1]);
-            let mul0 = get_score_mul(prev, input.n);
-            let mul1 = get_score_mul(next, input.n);
-            let dist_sq = self.points[prev].dist_sq(&self.points[next]);
-            score += dist_sq * mul0 * mul1;
+            score += self.calc_score(input, prev, next);
         }
 
         score
+    }
+
+    fn calc_score(&self, input: &Input, prev: usize, next: usize) -> i64 {
+        if prev < input.n && next < input.n {
+            input.distances[prev][next]
+        } else {
+            let mul0 = get_score_mul(prev, input.n);
+            let mul1 = get_score_mul(next, input.n);
+            let dist_sq = self.points[prev].dist_sq(&self.points[next]);
+            dist_sq * mul0 * mul1
+        }
     }
 }
 
@@ -196,17 +205,41 @@ fn read_input() -> Input {
         points.push(Point::new(x, y));
     }
 
+    let distances = warshall_floyd(&points);
+
     Input {
         n,
         m,
         points,
+        distances,
         since,
     }
+}
+
+fn warshall_floyd(points: &[Point]) -> Vec<Vec<i64>> {
+    let mut distances = mat![0; points.len(); points.len()];
+
+    for (i, p) in points.iter().enumerate() {
+        for (j, q) in points.iter().enumerate() {
+            distances[i][j] = p.dist_sq(q) * MULTIPLIER * MULTIPLIER;
+        }
+    }
+
+    for k in 0..distances.len() {
+        for i in 0..distances.len() {
+            for j in 0..distances.len() {
+                chmin!(distances[i][j], distances[i][k] + distances[k][j]);
+            }
+        }
+    }
+
+    distances
 }
 
 fn solve(input: &Input) -> State {
     let solution = State::init(&input);
     let solution = annealing(&input, solution, 0.98);
+    let solution = restore_solution(input, &solution);
     solution
 }
 
@@ -256,12 +289,10 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
             for w in temp_orders.windows(2) {
                 let (prev, next) = (w[0], w[1]);
                 new_orders.push(prev);
-                let mul0 = get_score_mul(prev, input.n);
-                let mul1 = get_score_mul(next, input.n);
-                let p0 = solution.points[prev];
-                let p1 = solution.points[next];
-                let old_dist = p0.dist_sq(&p1) * mul0 * mul1;
-                let new_dist = p0.dist_sq(&p) * mul0 + p.dist_sq(&p1) * mul1;
+                let old_dist = solution.calc_score(input, prev, next);
+                let new_dist = solution.calc_score(input, prev, station_id)
+                    + solution.calc_score(input, station_id, next);
+
                 if new_dist < old_dist {
                     new_orders.push(station_id);
                 }
@@ -293,19 +324,11 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
             let i1 = solution.orders[from];
             let i2 = solution.orders[to - 1];
             let i3 = solution.orders[to];
-            let p0 = solution.points[i0];
-            let p1 = solution.points[i1];
-            let p2 = solution.points[i2];
-            let p3 = solution.points[i3];
-            let mul0 = get_score_mul(i0, input.n);
-            let mul1 = get_score_mul(i1, input.n);
-            let mul2 = get_score_mul(i2, input.n);
-            let mul3 = get_score_mul(i3, input.n);
 
-            let d01 = p0.dist_sq(&p1) * mul0 * mul1;
-            let d23 = p2.dist_sq(&p3) * mul2 * mul3;
-            let d02 = p0.dist_sq(&p2) * mul0 * mul2;
-            let d13 = p1.dist_sq(&p3) * mul1 * mul3;
+            let d01 = solution.calc_score(input, i0, i1);
+            let d23 = solution.calc_score(input, i2, i3);
+            let d02 = solution.calc_score(input, i0, i2);
+            let d13 = solution.calc_score(input, i1, i3);
 
             // スコア計算
             let score_diff = d02 + d13 - d01 - d23;
@@ -345,6 +368,60 @@ fn get_score_mul(v: usize, threshold: usize) -> i64 {
     } else {
         1
     }
+}
+
+fn restore_solution(input: &Input, solution: &State) -> State {
+    let mut new_solution = solution.clone();
+    new_solution.orders.clear();
+    new_solution.orders.push(0);
+
+    for w in solution.orders.windows(2) {
+        let (prev, next) = (w[0], w[1]);
+        let path = dijkstra(input, solution, prev, next);
+        for v in path {
+            new_solution.orders.push(v);
+        }
+    }
+
+    new_solution
+}
+
+fn dijkstra(input: &Input, solution: &State, start: usize, goal: usize) -> Vec<usize> {
+    let mut distances = vec![std::i64::MAX / 2; input.n + input.m];
+    let mut from = vec![!0; input.n + input.m];
+    distances[start] = 0;
+    let mut queue = BinaryHeap::new();
+    queue.push(Reverse((0, start)));
+
+    while let Some(Reverse((dist, current))) = queue.pop() {
+        if dist > distances[current] {
+            continue;
+        }
+
+        if current == goal {
+            break;
+        }
+
+        for next in 0..(input.n + input.m) {
+            let d = solution.calc_score(input, current, next);
+            if chmin!(distances[next], dist + d) {
+                queue.push(Reverse((dist + d, next)));
+                from[next] = current;
+            }
+        }
+    }
+
+    let mut current = goal;
+    let mut path = vec![];
+
+    while current != start {
+        path.push(current);
+        current = from[current];
+    }
+
+    path.reverse();
+
+    path
 }
 
 fn write_output(input: &Input, solution: &State) {
