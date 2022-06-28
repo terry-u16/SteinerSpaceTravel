@@ -210,6 +210,7 @@ int main(int argc, char** argv) {
     // スコア計算
     ll score = calc_score(input, output);
     score_ofs << score << std::endl;
+    std::cerr << score << std::endl;
 
     return 0;
 }
