@@ -243,7 +243,7 @@ fn warshall_floyd(points: &[Point]) -> Vec<Vec<i64>> {
 
 fn solve(input: &Input) -> State {
     let solution = State::init(&input);
-    let solution = annealing(&input, solution, 0.98);
+    let solution = annealing(&input, solution, 0.99);
     let solution = restore_solution(input, &solution);
     solution
 }
@@ -266,7 +266,7 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
     let mut time = 0.0;
 
     let temp0 = 1e5;
-    let temp1 = 1e3;
+    let temp1 = 3e2;
     let mut inv_temp = 1.0 / temp0;
 
     while time < 1.0 {
@@ -299,7 +299,7 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
                 solution.orders.insert(index, station_id);
             }
         } else if neigh_type < 4 {
-            // 近傍2: 適当な位置のstationを削除する
+            // 近傍2: 適当な位置のstationを削除する。削除後は直接繋ぐ/他のstationを使う の良い方を選ぶ
             let mut index = 0;
             let mut trial = 0;
             while solution.orders[index] < input.n && trial < 10 {
@@ -317,14 +317,33 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
 
             let old_score = solution.calc_score(input, prev, station_id)
                 + solution.calc_score(input, station_id, next);
-            let new_score = solution.calc_score(input, prev, next);
+            let mut new_score = solution.calc_score(input, prev, next);
+            let mut best_station = None;
+
+            for new_station in input.n..(input.n + input.m) {
+                if new_station == station_id {
+                    continue;
+                }
+
+                let d = solution.calc_score(input, prev, new_station)
+                    + solution.calc_score(input, new_station, next);
+                if chmin!(new_score, d) {
+                    best_station = Some(new_station);
+                }
+            }
+
             let score_diff = new_score - old_score;
 
             if score_diff <= 0 || rng.gen_bool(f64::exp(-score_diff as f64 * inv_temp)) {
                 // 解の更新
                 current_score += score_diff;
                 accepted_count += 1;
-                solution.orders.remove(index);
+
+                if let Some(station) = best_station {
+                    solution.orders[index] = station;
+                } else {
+                    solution.orders.remove(index);
+                }
             }
         } else if neigh_type < 5 {
             // 近傍3: あるstationを一旦削除し、ランダムにずらした上で、各辺でstationを使う/使わないを貪欲に決め直す
@@ -521,6 +540,7 @@ mod rand {
             Self { s0, s1, s2, s3 }
         }
 
+        #[inline]
         fn next(&mut self) -> u64 {
             let result = (self.s1 * 5).rotate_left(7) * 9;
             let t = self.s1 << 17;
@@ -535,18 +555,21 @@ mod rand {
             result
         }
 
+        #[inline]
         pub(crate) fn gen_usize(&mut self, lower: usize, upper: usize) -> usize {
             assert!(lower < upper);
             let count = upper - lower;
             (self.next() % count as u64) as usize + lower
         }
 
+        #[inline]
         pub(crate) fn gen_i32(&mut self, lower: i32, upper: i32) -> i32 {
             assert!(lower < upper);
             let count = upper - lower;
             (self.next() % count as u64) as i32 + lower
         }
 
+        #[inline]
         pub(crate) fn gen_f64(&mut self) -> f64 {
             const UPPER_MASK: u64 = 0x3ff0000000000000;
             const LOWER_MASK: u64 = 0xfffffffffffff;
@@ -555,6 +578,7 @@ mod rand {
             result - 1.0
         }
 
+        #[inline]
         pub(crate) fn gen_bool(&mut self, prob: f64) -> bool {
             self.gen_f64() < prob
         }
