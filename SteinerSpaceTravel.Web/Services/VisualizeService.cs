@@ -53,7 +53,7 @@ public class VisualizeService
     
     public bool CanDownloadImage => _testCase != null;
 
-    public bool CanTweet => Score != 0;
+    public bool CanTweet => Score != 0 && Seed == 0;
 
     private TestCase? _testCase;
 
