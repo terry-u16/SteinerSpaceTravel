@@ -94,11 +94,12 @@ $t_V\ r_V$
 
 ## ツール（入力ジェネレータ・ビジュアライザ）
 
-- Web版
+- [Web版](https://steiner-space-travel.terry-u16.net/)
   - 以下の機能を持つ。
     - テストケース生成機能
     - 得点計算・ビジュアライズ機能
-- ローカル版
+  - コンテスト期間中、seed=0の結果に限りTwitterでの画像共有が許可されている。[共有された画像一覧](https://twitter.com/search?q=%23SteinerSpaceTravel%20%23visualizer)
+- [ローカル版](https://heuristicstorage.blob.core.windows.net/tools-host/steiner-space-travel.zip)
   - 以下の機能を持つ。
     - テストケース生成機能
     - 得点計算・ビジュアライズ機能
