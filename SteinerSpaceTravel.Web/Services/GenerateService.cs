@@ -28,7 +28,7 @@ public class GenerateService
     {
         try
         {
-            const string fileName = "in.zip";
+            const string fileName = "input.zip";
             _cancellationTokenSource = new();
             IsGenerating = true;
             Message = "Generating.";

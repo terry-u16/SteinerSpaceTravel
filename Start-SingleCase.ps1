@@ -1,6 +1,6 @@
 param(
     [Parameter(mandatory)]
-    [int]
+    [ulong]
     $seed
 )
 
