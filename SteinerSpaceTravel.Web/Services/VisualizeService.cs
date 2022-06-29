@@ -53,7 +53,7 @@ public class VisualizeService
     
     public bool CanDownloadImage => _testCase != null;
 
-    public bool CanTweet => Score != 0;
+    public bool CanTweet => Score != 0 && Seed == 0;
 
     private TestCase? _testCase;
 
@@ -152,9 +152,9 @@ public class VisualizeService
     {
         // https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent
         const string webIntentUrl = "https://twitter.com/intent/tweet";
-        const string url = "https://google.com/";
-        const string hashtags = "test,visualizer";
-        var text = $"XXXXXのseed={Seed}で{Score:#,##0}点を獲得しました！（ここに画像を貼ってね）";
+        const string url = "https://yukicoder.me/problems/8206";
+        const string hashtags = "SteinerSpaceTravel,visualizer";
+        var text = $"Steiner Space Travelのseed={Seed}で{Score:#,##0}点を獲得しました！（ここに画像を貼ってね）";
         var tweetUrl = WebSerializer.ToQueryString(webIntentUrl, new { text, url, hashtags });
         await _jsRuntime.InvokeVoidAsync("open", tweetUrl, "_blank", "noopener");
     }

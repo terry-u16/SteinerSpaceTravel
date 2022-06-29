@@ -9,6 +9,10 @@
     <AssemblyName>dev</AssemblyName>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="ConsoleAppFramework" Version="4.2.1" />
   </ItemGroup>
