@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/staticwebapp.config.json",
+  "routes": [
+    {
+      "route": "/*",
+      "allowedRoles": [ "admin", "tester" ]
+    }
+  ]
+}
