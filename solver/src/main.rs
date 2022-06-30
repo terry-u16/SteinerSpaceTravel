@@ -242,13 +242,26 @@ fn warshall_floyd(points: &[Point]) -> Vec<Vec<i64>> {
 }
 
 fn solve(input: &Input) -> State {
-    let solution = State::init(&input);
-    let solution = annealing(&input, solution, 0.98);
-    let solution = restore_solution(input, &solution);
+    let mut best_solution = State::init(&input);
+    let mut best_score = best_solution.calc_score_all(input);
+    const TRIAL: u64 = 5;
+
+    for i in 0..TRIAL {
+        let solution = State::init(&input);
+        let solution = annealing(&input, solution, 0.195, 42 + i);
+        let score = solution.calc_score_all(input);
+
+        if chmin!(best_score, score) {
+            best_solution = solution;
+        }
+    }
+
+    let solution = restore_solution(input, &best_solution);
+
     solution
 }
 
-fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
+fn annealing(input: &Input, initial_solution: State, duration: f64, seed: u64) -> State {
     let mut solution = initial_solution;
     let mut best_solution = solution.clone();
     let mut current_score = solution.calc_score_all(input);
@@ -259,7 +272,7 @@ fn annealing(input: &Input, initial_solution: State, duration: f64) -> State {
     let mut valid_iter = 0;
     let mut accepted_count = 0;
     let mut update_count = 0;
-    let mut rng = Xoshiro256::new(42);
+    let mut rng = Xoshiro256::new(seed);
 
     let duration_inv = 1.0 / duration;
     let since = std::time::Instant::now();
