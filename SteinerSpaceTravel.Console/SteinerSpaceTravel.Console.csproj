@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <AssemblyName>tester</AssemblyName>
     <Authors>terry_u16</Authors>
-    <Company />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
