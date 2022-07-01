@@ -200,9 +200,14 @@ public class Commands : ConsoleAppBase
         {
             return true;
         }
+        else if (File.Exists(path))
+        {
+            WriteErrorMessage($"ファイルではなくディレクトリを指定してください: {path}");
+            return false;
+        }
         else
         {
-            System.Console.WriteLine($"ディレクトリが存在しません: {path}");
+            WriteErrorMessage($"ディレクトリが存在しません: {path}");
             return false;
         }
     }
@@ -213,9 +218,14 @@ public class Commands : ConsoleAppBase
         {
             return true;
         }
+        else if (Directory.Exists(path))
+        {
+            WriteErrorMessage($"ディレクトリではなくファイルを指定してください: {path}");
+            return false;
+        }
         else
         {
-            System.Console.WriteLine($"ファイルが存在しません: {path}");
+            WriteErrorMessage($"ファイルが存在しません: {path}");
             return false;
         }
     }
