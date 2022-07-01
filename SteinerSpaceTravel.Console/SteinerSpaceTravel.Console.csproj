@@ -629,6 +629,9 @@
     <None Update="README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="seeds.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="ThirdPartyNotices.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
