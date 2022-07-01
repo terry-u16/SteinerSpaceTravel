@@ -1,6 +1,5 @@
 ﻿using Cysharp.Diagnostics;
 using SkiaSharp;
-using SteinerSpaceTravel.Core;
 using SteinerSpaceTravel.Core.Generators;
 using SteinerSpaceTravel.Core.Judges;
 using SteinerSpaceTravel.Core.Parsers;
@@ -224,11 +223,12 @@ public class Commands : ConsoleAppBase
 
         try
         {
-            TestCase testCase;
-            await using (var stdIn = process.StandardInput)
+            var testCaseString = await File.ReadAllLinesAsync(fileName, cancellationToken).ConfigureAwait(false);
+            var testCase = TestCaseParser.Parse(testCaseString);
+
+            if (!process.HasExited)
             {
-                var testCaseString = await File.ReadAllLinesAsync(fileName, cancellationToken).ConfigureAwait(false);
-                testCase = TestCaseParser.Parse(testCaseString);
+                await using var stdIn = process.StandardInput;
                 await stdIn.WriteAsync(string.Join('\n', testCaseString)).ConfigureAwait(false);
             }
 
