@@ -98,6 +98,7 @@ $t_V\ r_V$
   - 以下の機能を持つ。
     - テストケース生成機能
     - 得点計算・ビジュアライズ機能
+    - Twitterへの画像共有機能
   - コンテスト期間中、seed=0の結果に限りTwitterでの画像共有が許可されている。[共有された画像一覧](https://twitter.com/search?q=%23SteinerSpaceTravel%20%23visualizer)
     - 共有された画像には若干のネタバレが含まれる可能性がある。ネタバレを防ぎたい場合は、`#SteinerSpaceTravel`で各自ミュートされたい。
 - [ローカル版](https://heuristicstorage.blob.core.windows.net/tools-host/steiner-space-travel.zip)
