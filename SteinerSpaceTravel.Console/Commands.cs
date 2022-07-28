@@ -240,10 +240,17 @@ public class Commands : ConsoleAppBase
             var testCaseString = await File.ReadAllLinesAsync(fileName, cancellationToken).ConfigureAwait(false);
             var testCase = TestCaseParser.Parse(testCaseString);
 
-            if (!process.HasExited)
+            try
             {
-                await using var stdIn = process.StandardInput;
-                await stdIn.WriteAsync(string.Join('\n', testCaseString)).ConfigureAwait(false);
+                if (!process.HasExited)
+                {
+                    await using var stdIn = process.StandardInput;
+                    await stdIn.WriteAsync(string.Join('\n', testCaseString)).ConfigureAwait(false);
+                }
+            }
+            catch (Exception)
+            {
+                // 途中でプロセスが終了する可能性もあるが、その場合は無視
             }
 
             // process.TotalProcessorTimeを使用したいが、プロセス終了後に参照することができない
