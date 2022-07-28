@@ -53,7 +53,8 @@ public class VisualizeService
     
     public bool CanDownloadImage => _testCase != null;
 
-    public bool CanTweet => Score != 0 && Seed == 0;
+    // PCの時刻いじったらすり抜けられそうだけどまあええやろ
+    public bool CanTweet => Score != 0 && (Seed == 0 || DateTimeOffset.Now >= ContestEndTime);
 
     private TestCase? _testCase;
 
@@ -64,6 +65,8 @@ public class VisualizeService
     private readonly IBlazorDownloadFileService _blazorDownloadFileService;
 
     private static readonly string[] NewLines = { "\r\n", "\r", "\n" };
+
+    private static readonly DateTimeOffset ContestEndTime = new(2022, 7, 30, 18, 0, 0, TimeSpan.FromHours(9));
 
     public VisualizeService(IJSRuntime jsRuntime, IBlazorDownloadFileService blazorDownloadFileService)
     {

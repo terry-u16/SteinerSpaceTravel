@@ -1,6 +1,5 @@
 ﻿using Cysharp.Diagnostics;
 using SkiaSharp;
-using SteinerSpaceTravel.Core;
 using SteinerSpaceTravel.Core.Generators;
 using SteinerSpaceTravel.Core.Judges;
 using SteinerSpaceTravel.Core.Parsers;
@@ -132,61 +131,65 @@ public class Commands : ConsoleAppBase
         {
             return;
         }
-        
-        var semaphore = new SemaphoreSlim(parallelism, parallelism);
 
-        var tasks = Directory.EnumerateFiles(input, "*.txt").Select(async fileName =>
+        long totalScore = 0;
+        var fileCount = 0;
+        var lockObject = new object();
+        var parallelOptions = new ParallelOptions
         {
-            var testCaseName = Path.GetFileNameWithoutExtension(fileName);
-            var usingSemaphore = false;
+            MaxDegreeOfParallelism = parallelism, 
+            CancellationToken = Context.CancellationToken
+        };
 
-            try
-            {
-                await semaphore.WaitAsync(Context.CancellationToken).ConfigureAwait(false);
-                usingSemaphore = true;
-                var (score, message, elapsedMilliseconds) = await RunProcessAsync(command, fileName, Context.CancellationToken);
-
-                if (message is not null)
+        try
+        {
+            var files = Directory.EnumerateFiles(input, "*.txt");
+            await Parallel.ForEachAsync(files, parallelOptions, async (fileName, cancellationToken) =>
                 {
-                    WriteErrorMessage(message);
-                }
+                    var testCaseName = Path.GetFileNameWithoutExtension(fileName);
+                    Interlocked.Increment(ref fileCount);
 
-                WriteResult(testCaseName, score, elapsedMilliseconds);
-                return score;
-            }
-            catch (Exception ex)
-            {
-                WriteErrorMessage($"[{testCaseName}] {ex.Message}");
-                WriteResult(testCaseName, 0);
-                return 0;
-            }
-            finally
-            {
-                if (usingSemaphore)
-                {
-                    semaphore.Release();
-                }
-            }
-        });
+                    try
+                    {
+                        var (score, message, elapsedMilliseconds) =
+                            await RunProcessAsync(command, fileName, cancellationToken);
 
-        var scores = await Task.WhenAll(tasks);
+                        if (message is not null)
+                        {
+                            lock (lockObject)
+                            {
+                                WriteErrorMessage(message);
+                            }
+                        }
 
-        if (Context.CancellationToken.IsCancellationRequested)
+                        WriteResult(testCaseName, score, elapsedMilliseconds);
+                        Interlocked.Add(ref totalScore, score);
+                    }
+                    catch (Exception ex)
+                    {
+                        lock (lockObject)
+                        {
+                            WriteErrorMessage($"[{testCaseName}] {ex.Message.Trim()}");
+                            WriteResult(testCaseName, 0);
+                        }
+                    }
+                });
+        }
+        catch (TaskCanceledException)
         {
             System.Console.WriteLine("キャンセルされました。");
             return;
         }
 
-        if (scores.Length == 0)
+        if (fileCount == 0)
         {
             WriteErrorMessage("テストケースが見つかりませんでした。");
             return;
         }
 
-        var totalScore = scores.Sum();
-        var averageScore = totalScore / scores.Length;
+        var averageScore = totalScore / fileCount;
 
-        System.Console.WriteLine($"Testcase count: {scores.Length}");
+        System.Console.WriteLine($"Testcase count: {fileCount}");
         System.Console.WriteLine($"Total score: {totalScore}");
         System.Console.WriteLine($"Average score: {averageScore}");
     }
@@ -197,9 +200,14 @@ public class Commands : ConsoleAppBase
         {
             return true;
         }
+        else if (File.Exists(path))
+        {
+            WriteErrorMessage($"ファイルではなくディレクトリを指定してください: {path}");
+            return false;
+        }
         else
         {
-            System.Console.WriteLine($"ディレクトリが存在しません: {path}");
+            WriteErrorMessage($"ディレクトリが存在しません: {path}");
             return false;
         }
     }
@@ -210,9 +218,14 @@ public class Commands : ConsoleAppBase
         {
             return true;
         }
+        else if (Directory.Exists(path))
+        {
+            WriteErrorMessage($"ディレクトリではなくファイルを指定してください: {path}");
+            return false;
+        }
         else
         {
-            System.Console.WriteLine($"ファイルが存在しません: {path}");
+            WriteErrorMessage($"ファイルが存在しません: {path}");
             return false;
         }
     }
@@ -224,12 +237,20 @@ public class Commands : ConsoleAppBase
 
         try
         {
-            TestCase testCase;
-            await using (var stdIn = process.StandardInput)
+            var testCaseString = await File.ReadAllLinesAsync(fileName, cancellationToken).ConfigureAwait(false);
+            var testCase = TestCaseParser.Parse(testCaseString);
+
+            try
             {
-                var testCaseString = await File.ReadAllLinesAsync(fileName, cancellationToken).ConfigureAwait(false);
-                testCase = TestCaseParser.Parse(testCaseString);
-                await stdIn.WriteAsync(string.Join('\n', testCaseString)).ConfigureAwait(false);
+                if (!process.HasExited)
+                {
+                    await using var stdIn = process.StandardInput;
+                    await stdIn.WriteAsync(string.Join('\n', testCaseString)).ConfigureAwait(false);
+                }
+            }
+            catch (Exception)
+            {
+                // 途中でプロセスが終了する可能性もあるが、その場合は無視
             }
 
             // process.TotalProcessorTimeを使用したいが、プロセス終了後に参照することができない
