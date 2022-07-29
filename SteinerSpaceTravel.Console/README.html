@@ -370,11 +370,11 @@ code {
 <p><a href="https://dotnet.microsoft.com/ja-jp/download/dotnet/6.0">.NET Runtime 6</a>が必要です。事前にインストールをお願いします。</p>
 <p><a href="https://dotnet.microsoft.com/ja-jp/download/dotnet/6.0">リンク先</a>の &quot;.NET Runtime 6.x.x&quot; セクションから、ご自身の環境に合ったインストーラをダウンロード・実行ください。</p>
 <h3 id="windows">Windows</h3>
-<p>どれを選ぶべきかよく分からない……という場合は、x86版インストーラをダウンロードすればとりあえず問題ないはずです。</p>
+<p>どれを選ぶべきかよく分からない……という場合は、<a href="https://dotnet.microsoft.com/ja-jp/download/dotnet/thank-you/runtime-6.0.7-windows-x86-installer">x86版インストーラ</a>をダウンロードすればとりあえず問題ないはずです。また64bit版Windowsをお使いの方は<a href="https://dotnet.microsoft.com/ja-jp/download/dotnet/thank-you/runtime-6.0.7-windows-x64-installer">x64版インストーラ</a>のダウンロードを推奨します。</p>
 <h3 id="macos">macOS</h3>
-<p>Intel macの場合はx64版インストーラを、M1 Mac以降の場合はArm64版インストーラをダウンロードください。</p>
+<p>Intel macの場合は<a href="https://dotnet.microsoft.com/ja-jp/download/dotnet/thank-you/runtime-6.0.7-macos-x64-installer">x64版インストーラ</a>を、M1 Mac以降の場合は<a href="https://dotnet.microsoft.com/ja-jp/download/dotnet/thank-you/runtime-6.0.7-macos-arm64-installer">Arm64版インストーラ</a>をダウンロードください。</p>
 <h3 id="linux">Linux</h3>
-<p><a href="https://docs.microsoft.com/ja-jp/dotnet/core/install/linux?WT.mc_id=dotnet-35129-website">パッケージマネージャーの手順</a>をクリックし、ご自身のディストリビューションに沿った手順でインストールください。例えばUbuntu 20.04の場合、以下のコマンドでインストールが可能です。</p>
+<p><a href="https://docs.microsoft.com/ja-jp/dotnet/core/install/linux?WT.mc_id=dotnet-35129-website">パッケージマネージャーの手順</a>を参照し、ご自身のディストリビューションに合った手順でインストールください。例えばUbuntu 20.04の場合、以下のコマンドでインストールが可能です。</p>
 <pre class="hljs"><code><div>wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
@@ -408,6 +408,11 @@ sudo apt-get update; \
 <ul>
 <li><code>judge-all</code> コマンドでは実行時間も表示されますが、実際の時間より若干長くなることがあります。あくまで参考値としてお使いください。</li>
 <li>途中でコマンドの実行を止めたい場合は、 <code>ctrl + C</code> を入力してください。</li>
+<li>macでビジュアライズを行う際、「&quot;libSkiaSharp.dylib&quot;が悪質なソフトウェアかどうかをAppleでは確認できないため、このソフトウェアは開けません。」とのダイアログが表示され、ジャッジプログラムが強制終了する事象が確認されています。
+<ul>
+<li>エラー発生後、「システム環境設定→セキュリティとプライバシー」の「一般」タブから <code>libSkiaSharp.dylib</code> の実行許可を行うことで実行できるようになります。</li>
+</ul>
+</li>
 <li>本ツールとジャッジプログラムの動作結果の同一性については保証しません。</li>
 <li>本ツールを利用した結果生じた損害について、一切の責任を負いません。</li>
 <li>不明点・不具合等がありましたら、 <a href="https://twitter.com/terry_u16">@terry_u16</a> までお問い合わせください。</li>
