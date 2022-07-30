@@ -155,7 +155,7 @@ public class VisualizeService
     {
         // https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent
         const string webIntentUrl = "https://twitter.com/intent/tweet";
-        const string url = "https://yukicoder.me/problems/8206";
+        const string url = "https://yukicoder.me/problems/no/5007";
         const string hashtags = "SteinerSpaceTravel,visualizer";
         var text = $"Steiner Space Travelのseed={Seed}で{Score:#,##0}点を獲得しました！（ここに画像を貼ってね）";
         var tweetUrl = WebSerializer.ToQueryString(webIntentUrl, new { text, url, hashtags });
